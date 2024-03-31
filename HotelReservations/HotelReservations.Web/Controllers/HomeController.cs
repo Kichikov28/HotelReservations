@@ -1,4 +1,4 @@
-using HotelReservations.Web.Models;
+using HotelReservations.ViewModels.Shared;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 

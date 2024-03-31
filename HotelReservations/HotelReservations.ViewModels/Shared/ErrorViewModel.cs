@@ -1,4 +1,4 @@
-namespace HotelReservations.Web.Models
+namespace HotelReservations.ViewModels.Shared
 {
     public class ErrorViewModel
     {

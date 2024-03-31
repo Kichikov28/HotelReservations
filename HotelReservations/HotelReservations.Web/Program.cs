@@ -1,8 +1,9 @@
 using HotelReservations.Data.Models;
 using HotelReservations.Data;
-using HotelReservations.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using HotelReservations.Services.Contracts;
+using HotelReservations.Services;
 
 namespace HotelReservations.Web
 {
@@ -15,7 +16,11 @@ namespace HotelReservations.Web
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
+            {
+                options.UseSqlServer(connectionString);
+                options.UseLazyLoadingProxies();
+
+            });
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.AddDefaultIdentity<User>(options =>
@@ -32,6 +37,8 @@ namespace HotelReservations.Web
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
 
+            //Add my services
+            builder.Services.AddTransient<IUsersService, UsersService>();
 
             var app = builder.Build();
 
