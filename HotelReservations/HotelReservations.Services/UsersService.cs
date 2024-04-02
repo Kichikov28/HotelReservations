@@ -38,6 +38,7 @@ namespace HotelReservations.Services
             User user = new User()
             {
                 FirstName = model.FirstName,
+                MiddleName= model.MiddleName,
                 LastName = model.LastName,
                 Email = model.Email,
                 UserName = model.Email
@@ -88,7 +89,7 @@ namespace HotelReservations.Services
                 result = new DetailsUserViewModel()
                 {
                     Id = user.Id,
-                    Name = $"{user.FirstName} {user.LastName}",
+                    Name = $"{user.FirstName} {user.MiddleName} {user.LastName}",
                     Email = user.Email != null ? user.Email : "n/a",
                     Phone = user.PhoneNumber != null ? user.PhoneNumber : "n/a",
                     Role = roles
@@ -113,7 +114,7 @@ namespace HotelReservations.Services
                 .Select(x => new IndexUserViewModel()
                 {
                     Id = x.Id,
-                    Name = $"{x.FirstName} {x.LastName}",
+                    Name = $"{x.FirstName} {x.MiddleName} {x.LastName}",
                     Role = string.Join(", ", userManager.GetRolesAsync(x).GetAwaiter().GetResult())
                 })
                 .ToListAsync();
