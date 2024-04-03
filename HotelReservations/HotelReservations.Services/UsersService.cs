@@ -40,8 +40,12 @@ namespace HotelReservations.Services
                 FirstName = model.FirstName,
                 MiddleName= model.MiddleName,
                 LastName = model.LastName,
+                UCN= model.UCN,
                 Email = model.Email,
-                UserName = model.Email
+                PhoneNumber= model.PhoneNumber,
+                HireDate=model.HireDate,
+                UserName = model.Email,
+                Status=model.Status,
             };
 
             var result = await userManager.CreateAsync(user, model.Password);
@@ -91,7 +95,11 @@ namespace HotelReservations.Services
                     Id = user.Id,
                     Name = $"{user.FirstName} {user.MiddleName} {user.LastName}",
                     Email = user.Email != null ? user.Email : "n/a",
-                    Phone = user.PhoneNumber != null ? user.PhoneNumber : "n/a",
+                    UCN=user.UCN,
+                    Status = user.Status,
+                    HireDate= user.HireDate,
+                    QuitDate= user.QuitDate,
+                    PhoneNumber = user.PhoneNumber != null ? user.PhoneNumber : "n/a",
                     Role = roles
                 };
             }
@@ -115,6 +123,12 @@ namespace HotelReservations.Services
                 {
                     Id = x.Id,
                     Name = $"{x.FirstName} {x.MiddleName} {x.LastName}",
+                    Email=x.Email,
+                    PhoneNumber = x.PhoneNumber != null ? x.PhoneNumber : "n/a",
+                    UCN =x.UCN,
+                    Status = x.Status,
+                    HireDate=x.HireDate,
+                    QuitDate=x.QuitDate,
                     Role = string.Join(", ", userManager.GetRolesAsync(x).GetAwaiter().GetResult())
                 })
                 .ToListAsync();
