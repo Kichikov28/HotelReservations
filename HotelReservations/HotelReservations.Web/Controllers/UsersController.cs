@@ -6,6 +6,7 @@ using HotelReservations.Common;
 using HotelReservations.Services.Contracts;
 using HotelReservations.ViewModels.Users;
 using System.Security.Claims;
+using HotelReservations.Services;
 
 namespace HotelReservations.Web.Controllers
 {
@@ -62,12 +63,18 @@ namespace HotelReservations.Web.Controllers
             }
             return View(model);
         }
-
+        public async Task<IActionResult> Details(string id)
+        {
+            DetailsUserViewModel model = await service.GetUserDetailsAsync(id);
+            return View(model);
+        }
         [Authorize(Roles = GlobalConstants.AdminRole)]
         [HttpGet]
         public async Task<IActionResult> Seed()
         {
             const string Password = "123456";
+            const string UCN = "1122334455";
+            const string PhoneNumber = "0896342517";
             for (int i = 0; i < 50; i++)
             {
                 string result = await service.CreateUserAsync(
@@ -75,8 +82,11 @@ namespace HotelReservations.Web.Controllers
                       new CreateUserViewModel()
                       {
                           FirstName = $"Name {i}",
-                          MiddleName=$"MiddleName:{i}",
+                          MiddleName=$"MiddleName {i}",
                           LastName = $"LastName {i}",
+                          UCN=UCN,
+                          PhoneNumber=PhoneNumber,
+                          HireDate= DateTime.UtcNow,
                           Password = Password,
                           ConfirmPassword = Password,
                           Email = $"user{i}@app.bg"
@@ -85,7 +95,6 @@ namespace HotelReservations.Web.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
-
         [Authorize(Roles = GlobalConstants.AdminRole)]
         [HttpGet]
         public async Task<IActionResult> Delete(string id)

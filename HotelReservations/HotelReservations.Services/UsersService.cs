@@ -82,9 +82,9 @@ namespace HotelReservations.Services
 
         public async Task<DetailsUserViewModel?> GetUserDetailsAsync(string id)
         {
-            DetailsUserViewModel? result = null;
+            DetailsUserViewModel result = null;
 
-            User? user = await GetUserByIdAsync(id);
+            User user = await GetUserByIdAsync(id);
 
             if (user != null)
             {
