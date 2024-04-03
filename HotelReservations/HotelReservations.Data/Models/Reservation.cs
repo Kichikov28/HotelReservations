@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HotelReservations.Data.Models
 {
@@ -14,5 +10,11 @@ namespace HotelReservations.Data.Models
         public string UserId { get; set; }
         public virtual User User { get; set; }
         public virtual ICollection<Client> Clients { get; set; } = new List<Client>();
+        public DateTime AccommodationDate { get; set; }
+        public DateTime LeaveDate { get; set; }
+        public bool HasBreakfast { get; set; }
+        public bool HasAllInclusive { get; set; }
+        [Column(TypeName ="money")]
+        public decimal Price { get; set; }
     }
 }
