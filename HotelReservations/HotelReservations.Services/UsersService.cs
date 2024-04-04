@@ -98,7 +98,6 @@ namespace HotelReservations.Services
                     UCN=user.UCN,
                     Status = user.Status,
                     HireDate= user.HireDate,
-                    QuitDate= user.QuitDate,
                     PhoneNumber = user.PhoneNumber != null ? user.PhoneNumber : "n/a",
                     Role = roles
                 };

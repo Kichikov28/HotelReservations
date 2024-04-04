@@ -28,10 +28,6 @@ namespace HotelReservations.ViewModels.Users
         [Display(Name = "Hire date")]
         public DateTime HireDate { get; set; }
         public bool Status { get; set; }
-        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}")]
-        [DataType(DataType.Date)]
-        [Display(Name = "Quit date")]
-        public DateTime? QuitDate { get; set; }
         [Display(Name = "Roles")]
         public string Role { get; set; }
     }
