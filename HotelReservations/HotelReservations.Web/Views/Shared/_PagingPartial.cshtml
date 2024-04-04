@@ -1,10 +1,24 @@
 ﻿@model PagingViewModel
+
+
 <nav aria-label="..." class="">
     <ul class="pagination  justify-content-center ">
+        <li style="margin-right:5px">
+            <form asp-action="@Model.Action" method="get" id="pageSizeForm">
+
+                <select asp-for="ItemsPerPage" class="form-control border-dark" onchange="changeItemsPerPage();">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+
+                <input type="submit" id="loginSubmit" style="visibility:hidden" />
+            </form>
+        </li>
         <li class="page-item @if (!Model.HasPreviousPage) { <text>disabled</text> }">
             <a class="page-link" asp-action="@Model.Action" asp-route-page="@Model.PreviousPageNumber">Back
                 <i class="fas fa-step-backward"></i>
-
             </a>
         </li>
         @for (int i = Model.Page - 2; i < Model.Page; i++)
@@ -32,3 +46,11 @@
         </li>
     </ul>
 </nav>
+
+<script type="text/javascript">
+    
+    function changeItemsPerPage() {
+       
+        document.getElementById('pageSizeForm').submit();
+    }
+</script>
