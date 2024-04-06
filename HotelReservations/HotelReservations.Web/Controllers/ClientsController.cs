@@ -7,16 +7,20 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HotelReservations.Data;
 using HotelReservations.Data.Models;
+using HotelReservations.ViewModels.Clients;
+using HotelReservations.Services.Contracts;
 
 namespace HotelReservations.Web.Controllers
 {
     public class ClientsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IClientsService service;
 
-        public ClientsController(ApplicationDbContext context)
+        public ClientsController(ApplicationDbContext context,IClientsService service)
         {
             _context = context;
+            this.service = service;
         }
 
         // GET: Clients
@@ -48,7 +52,6 @@ namespace HotelReservations.Web.Controllers
         // GET: Clients/Create
         public IActionResult Create()
         {
-            ViewData["ReservationId"] = new SelectList(_context.Reservations, "Id", "Id");
             return View();
         }
 
@@ -57,16 +60,14 @@ namespace HotelReservations.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,Number,Email,IsAdult,ReservationId")] Client client)
+        public async Task<IActionResult> Create(ClientCreateViewModel model)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(client);
-                await _context.SaveChangesAsync();
+                await service.CreateCustomerAsync(model);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ReservationId"] = new SelectList(_context.Reservations, "Id", "Id", client.ReservationId);
-            return View(client);
+            return View(model);
         }
 
         // GET: Clients/Edit/5

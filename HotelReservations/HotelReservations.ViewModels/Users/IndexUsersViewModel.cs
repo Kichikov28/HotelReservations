@@ -17,7 +17,7 @@ namespace HotelReservations.ViewModels.Users
         public IndexUsersViewModel(int elementsCount, int itemsPerPage = 10, string action = "Index") : base(elementsCount, itemsPerPage, action)
         {
         }
-
+        public string Filter { get; set; }
         public ICollection<IndexUserViewModel> Users { get; set; } = new List<IndexUserViewModel>();
 
     }

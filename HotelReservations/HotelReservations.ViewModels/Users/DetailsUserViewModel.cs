@@ -27,6 +27,7 @@ namespace HotelReservations.ViewModels.Users
         [DataType(DataType.Date)]
         [Display(Name = "Hire date")]
         public DateTime HireDate { get; set; }
+        [Display(Name="Status")]
         public bool Status { get; set; }
         [Display(Name = "Roles")]
         public string Role { get; set; }

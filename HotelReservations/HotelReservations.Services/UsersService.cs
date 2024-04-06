@@ -112,7 +112,17 @@ namespace HotelReservations.Services
             {
                 users = new IndexUsersViewModel(0);
             }
-            users.ElementsCount = await GetUsersCountAsync();
+            users.ElementsCount = await GetUsersCountAsync(); 
+            IQueryable<User> usersFilter = null;
+
+            if (!string.IsNullOrWhiteSpace(users.Filter))
+            {
+                usersFilter = context.Users.Where(x => x.FirstName.Contains(users.Filter));
+            }
+            else
+            {
+                usersFilter = context.Users;
+            }
 
             users.Users = await userManager
                 .Users
@@ -160,6 +170,7 @@ namespace HotelReservations.Services
 
 
         }
+
         public async Task<string> UpdateUserAsync(EditUserViewModel user)
         {
             User? oldUser = await GetUserByIdAsync(user.Id);
@@ -168,6 +179,7 @@ namespace HotelReservations.Services
             {
                 oldUser.FirstName = user.FirstName;
                 oldUser.LastName = user.LastName;
+                oldUser.Status = user.Status;
                 await userManager.UpdateAsync(oldUser);
             }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HotelReservations.ViewModels.Clients;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +9,6 @@ namespace HotelReservations.Services.Contracts
 {
     public interface IClientsService
     {
+        public Task<string> CreateCustomerAsync(ClientCreateViewModel model);
     }
 }

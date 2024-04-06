@@ -24,5 +24,8 @@ namespace HotelReservations.ViewModels.Users
 
         [Display(Name = "Last name")]
         public string LastName { get; set; }
+
+        [Display(Name = "Status")]
+        public bool Status { get; set; }
     }
 }
