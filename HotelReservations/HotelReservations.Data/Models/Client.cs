@@ -14,7 +14,7 @@ namespace HotelReservations.Data.Models
         public string Number { get; set; }
         public string Email { get; set; }
         public bool IsAdult { get; set; }
-        public string ReservationId { get; set; }
+        public string? ReservationId { get; set; }
         public virtual Reservation Reservation { get; set; }
     }
 }

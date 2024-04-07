@@ -17,17 +17,18 @@ namespace HotelReservations.Web.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IClientsService service;
 
-        public ClientsController(ApplicationDbContext context,IClientsService service)
+        public ClientsController(ApplicationDbContext context, IClientsService service)
         {
             _context = context;
             this.service = service;
         }
 
         // GET: Clients
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(ClientsIndexViewModel model)
         {
-            var applicationDbContext = _context.Clients.Include(c => c.Reservation);
-            return View(await applicationDbContext.ToListAsync());
+            model = await service.GetClientsAsync(model);
+
+            return View(model);
         }
 
         // GET: Clients/Details/5
@@ -64,7 +65,7 @@ namespace HotelReservations.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                await service.CreateCustomerAsync(model);
+                await service.CreateClientAsync(model);
                 return RedirectToAction(nameof(Index));
             }
             return View(model);
@@ -73,18 +74,8 @@ namespace HotelReservations.Web.Controllers
         // GET: Clients/Edit/5
         public async Task<IActionResult> Edit(string id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var client = await _context.Clients.FindAsync(id);
-            if (client == null)
-            {
-                return NotFound();
-            }
-            ViewData["ReservationId"] = new SelectList(_context.Reservations, "Id", "Id", client.ReservationId);
-            return View(client);
+            ClientEditViewModel model = await service.EditCustomerByIdAsync(id);
+            return View(model);
         }
 
         // POST: Clients/Edit/5
@@ -92,35 +83,14 @@ namespace HotelReservations.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Id,FirstName,LastName,Number,Email,IsAdult,ReservationId")] Client client)
+        public async Task<IActionResult> Edit(ClientEditViewModel model)
         {
-            if (id != client.Id)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(client);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ClientExists(client.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                await service.UpdateCustomerAsync(model);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ReservationId"] = new SelectList(_context.Reservations, "Id", "Id", client.ReservationId);
-            return View(client);
+            return View(model);
         }
 
         // GET: Clients/Delete/5

@@ -9,6 +9,10 @@ namespace HotelReservations.Services.Contracts
 {
     public interface IClientsService
     {
-        public Task<string> CreateCustomerAsync(ClientCreateViewModel model);
+        public Task<string> CreateClientAsync(ClientCreateViewModel model);
+
+        public Task<ClientsIndexViewModel> GetClientsAsync(ClientsIndexViewModel model);
+        public Task<ClientEditViewModel> EditCustomerByIdAsync(string id);
+        public Task UpdateCustomerAsync(ClientEditViewModel model);
     }
 }

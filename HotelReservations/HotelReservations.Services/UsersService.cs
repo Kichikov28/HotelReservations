@@ -38,14 +38,14 @@ namespace HotelReservations.Services
             User user = new User()
             {
                 FirstName = model.FirstName,
-                MiddleName= model.MiddleName,
+                MiddleName = model.MiddleName,
                 LastName = model.LastName,
-                UCN= model.UCN,
+                UCN = model.UCN,
                 Email = model.Email,
-                PhoneNumber= model.PhoneNumber,
-                HireDate=model.HireDate,
+                PhoneNumber = model.PhoneNumber,
+                HireDate = model.HireDate,
                 UserName = model.Email,
-                Status=model.Status,
+                Status = model.Status,
             };
 
             var result = await userManager.CreateAsync(user, model.Password);
@@ -95,9 +95,9 @@ namespace HotelReservations.Services
                     Id = user.Id,
                     Name = $"{user.FirstName} {user.MiddleName} {user.LastName}",
                     Email = user.Email != null ? user.Email : "n/a",
-                    UCN=user.UCN,
+                    UCN = user.UCN,
                     Status = user.Status,
-                    HireDate= user.HireDate,
+                    HireDate = user.HireDate,
                     PhoneNumber = user.PhoneNumber != null ? user.PhoneNumber : "n/a",
                     Role = roles
                 };
@@ -106,43 +106,39 @@ namespace HotelReservations.Services
             return result;
         }
 
-        public async Task<IndexUsersViewModel> GetUsersAsync(IndexUsersViewModel users)
+        public async Task<IndexUsersViewModel> GetUsersAsync(IndexUsersViewModel model)
         {
-            if (users == null)
+            if (model == null)
             {
-                users = new IndexUsersViewModel(0);
-            }
-            users.ElementsCount = await GetUsersCountAsync(); 
-            IQueryable<User> usersFilter = null;
-
-            if (!string.IsNullOrWhiteSpace(users.Filter))
-            {
-                usersFilter = context.Users.Where(x => x.FirstName.Contains(users.Filter));
-            }
-            else
-            {
-                usersFilter = context.Users;
+                model = new IndexUsersViewModel(0);
             }
 
-            users.Users = await userManager
-                .Users
-                .Skip((users.Page - 1) * users.ItemsPerPage)
-                .Take(users.ItemsPerPage)
+            IQueryable<User> dataUsers = userManager.Users;
+
+            if (!string.IsNullOrWhiteSpace(model.FilterByName))
+            {
+                dataUsers = dataUsers.Where(x => x.FirstName.Contains(model.FilterByName) || x.MiddleName.Contains(model.FilterByName) || x.LastName.Contains(model.FilterByName));
+            }
+
+            model.ElementsCount = await dataUsers.CountAsync();
+
+            model.Users = await dataUsers
+                .Skip((model.Page - 1) * model.ItemsPerPage)
+                .Take(model.ItemsPerPage)
                 .Select(x => new IndexUserViewModel()
                 {
                     Id = x.Id,
                     Name = $"{x.FirstName} {x.MiddleName} {x.LastName}",
-                    Email=x.Email,
-                    PhoneNumber = x.PhoneNumber != null ? x.PhoneNumber : "n/a",
-                    UCN =x.UCN,
+                    Email = x.Email,
+                    PhoneNumber = x.PhoneNumber,
                     Status = x.Status,
-                    HireDate=x.HireDate,
-                    QuitDate=x.QuitDate,
+                    HireDate = x.HireDate,
+                    UCN = x.UCN,
                     Role = string.Join(", ", userManager.GetRolesAsync(x).GetAwaiter().GetResult())
                 })
                 .ToListAsync();
 
-            return users;
+            return model;
         }
 
         public async Task<int> GetUsersCountAsync()
@@ -199,6 +195,6 @@ namespace HotelReservations.Services
         public async Task<SignInResult> Login(LoginViewModel model)
         {
             return await signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-        }  
+        }
     }
 }

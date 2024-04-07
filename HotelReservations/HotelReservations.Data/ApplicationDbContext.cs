@@ -29,7 +29,8 @@ namespace HotelReservations.Data
             builder.Entity<Client>()
                 .HasOne(c => c.Reservation)
                 .WithMany(r => r.Clients)
-                .HasForeignKey(c => c.ReservationId);
+               .HasForeignKey(c => c.ReservationId)
+               .IsRequired(false);
             base.OnModelCreating(builder);  
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
