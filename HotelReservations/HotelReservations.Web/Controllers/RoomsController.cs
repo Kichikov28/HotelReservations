@@ -7,16 +7,20 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HotelReservations.Data;
 using HotelReservations.Data.Models;
+using HotelReservations.ViewModels.Rooms;
+using HotelReservations.Services;
 
 namespace HotelReservations.Web.Controllers
 {
     public class RoomsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly RoomsService service;
 
-        public RoomsController(ApplicationDbContext context)
+        public RoomsController(ApplicationDbContext context,RoomsService service)
         {
             _context = context;
+            this.service = service;
         }
 
         // GET: Rooms
@@ -48,7 +52,6 @@ namespace HotelReservations.Web.Controllers
         // GET: Rooms/Create
         public IActionResult Create()
         {
-            ViewData["ReservationId"] = new SelectList(_context.Reservations, "Id", "Id");
             return View();
         }
 
@@ -57,16 +60,13 @@ namespace HotelReservations.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Capacity,Number,Type,IsAvailable,PricePerAdultBed,PricePerChildBed,ReservationId")] Room room)
+        public async Task<IActionResult> Create(CreateRoomViewModel model)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(room);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                await service.CreateRoomAsync(model);
             }
-            ViewData["ReservationId"] = new SelectList(_context.Reservations, "Id", "Id", room.ReservationId);
-            return View(room);
+            return View(model);
         }
 
         // GET: Rooms/Edit/5

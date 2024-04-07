@@ -1,4 +1,5 @@
-﻿@model HotelReservations.Data.Models.Room
+﻿@using HotelReservations.Data.Models.Enums
+@model CreateRoomViewModel
 
 @{
     ViewData["Title"] = "Create";
@@ -13,11 +14,6 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Id" class="control-label"></label>
-                <input asp-for="Id" class="form-control" />
-                <span asp-validation-for="Id" class="text-danger"></span>
-            </div>
-            <div class="form-group">
                 <label asp-for="Capacity" class="control-label"></label>
                 <input asp-for="Capacity" class="form-control" />
                 <span asp-validation-for="Capacity" class="text-danger"></span>
@@ -28,14 +24,18 @@
                 <span asp-validation-for="Number" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Type" class="control-label"></label>
-                <select asp-for="Type" class="form-control"></select>
-                <span asp-validation-for="Type" class="text-danger"></span>
+                <label asp-for="RoomType" class="control-label"></label>
+                <select asp-for="RoomType" asp-items="Html.GetEnumSelectList<RoomType>()">
+                    <option selected></option>
+                    </select>
+                <span asp-validation-for="RoomType" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsAvailable" /> @Html.DisplayNameFor(model => model.IsAvailable)
-                </label>
+            <div class="form-group">
+                <div class="checkbox">
+                    <label>
+                        <input asp-for="IsAvailable" /> IsAvailable
+                    </label>
+                </div>
             </div>
             <div class="form-group">
                 <label asp-for="PricePerAdultBed" class="control-label"></label>
@@ -46,10 +46,6 @@
                 <label asp-for="PricePerChildBed" class="control-label"></label>
                 <input asp-for="PricePerChildBed" class="form-control" />
                 <span asp-validation-for="PricePerChildBed" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ReservationId" class="control-label"></label>
-                <select asp-for="ReservationId" class ="form-control" asp-items="ViewBag.ReservationId"></select>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
