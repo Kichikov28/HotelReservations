@@ -14,5 +14,6 @@ namespace HotelReservations.Services.Contracts
         public Task<ClientsIndexViewModel> GetClientsAsync(ClientsIndexViewModel model);
         public Task<ClientEditViewModel> EditCustomerByIdAsync(string id);
         public Task UpdateCustomerAsync(ClientEditViewModel model);
+        public Task<ClientDetailsViewModel> GetClientDetailsByIdAsync(string id);
     }
 }

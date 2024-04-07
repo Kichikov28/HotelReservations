@@ -52,7 +52,7 @@ namespace HotelReservations.Services
             model.ElementsCount = await this.context.Clients.CountAsync();
             return model;
         }
-        public async Task<ClientDetailsViewModel> GetCustomerDetailsByIdAsync(string id)
+        public async Task<ClientDetailsViewModel> GetClientDetailsByIdAsync(string id)
         {
             Client client = await this.context.Clients.FindAsync(id);
             if (client != null)

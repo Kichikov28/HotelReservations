@@ -32,22 +32,11 @@ namespace HotelReservations.Web.Controllers
         }
 
         // GET: Clients/Details/5
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(string id, ClientDetailsViewModel model)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            model = await service.GetClientDetailsByIdAsync(id);
+            return View(model);
 
-            var client = await _context.Clients
-                .Include(c => c.Reservation)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (client == null)
-            {
-                return NotFound();
-            }
-
-            return View(client);
         }
 
         // GET: Clients/Create
