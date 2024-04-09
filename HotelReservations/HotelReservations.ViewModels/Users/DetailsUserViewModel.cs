@@ -10,8 +10,6 @@ namespace HotelReservations.ViewModels.Users
     public class DetailsUserViewModel
     {
         public string Id { get; set; }
-
-
         [Display(Name="Full name")]
         public string Name { get; set; }
 

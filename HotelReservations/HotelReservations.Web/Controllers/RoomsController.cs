@@ -10,6 +10,8 @@ using HotelReservations.Data.Models;
 using HotelReservations.ViewModels.Rooms;
 using HotelReservations.Services;
 using HotelReservations.Services.Contracts;
+using HotelReservations.ViewModels.Clients;
+using HotelReservations.Data.Models.Enums;
 
 namespace HotelReservations.Web.Controllers
 {
@@ -34,20 +36,8 @@ namespace HotelReservations.Web.Controllers
         // GET: Rooms/Details/5
         public async Task<IActionResult> Details(string id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var room = await _context.Rooms
-                .Include(r => r.Reservation)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (room == null)
-            {
-                return NotFound();
-            }
-
-            return View(room);
+            RoomDetailsViewModel model = await service.GetRoomDetailsAsync(id);
+            return View(model);
         }
 
         // GET: Rooms/Create
@@ -74,18 +64,8 @@ namespace HotelReservations.Web.Controllers
         // GET: Rooms/Edit/5
         public async Task<IActionResult> Edit(string id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var room = await _context.Rooms.FindAsync(id);
-            if (room == null)
-            {
-                return NotFound();
-            }
-            ViewData["ReservationId"] = new SelectList(_context.Reservations, "Id", "Id", room.ReservationId);
-            return View(room);
+            EditRoomViewModel model = await service.EditRoomAsync(id);
+            return View(model);
         }
 
         // POST: Rooms/Edit/5
@@ -93,37 +73,32 @@ namespace HotelReservations.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Id,Capacity,Number,Type,IsAvailable,PricePerAdultBed,PricePerChildBed,ReservationId")] Room room)
+        public async Task<IActionResult> Edit(EditRoomViewModel model)
         {
-            if (id != room.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(room);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!RoomExists(room.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["ReservationId"] = new SelectList(_context.Reservations, "Id", "Id", room.ReservationId);
-            return View(room);
+            await service.UpdateRoomAsync(model);
+            return RedirectToAction(nameof(Index));
         }
+        public async Task<IActionResult> Seed()
+        {
 
+            Random random = new Random();
+            for (int i = 1; i <= 20; i++)
+            {
+                string result = await service.CreateRoomAsync(
+
+                      new CreateRoomViewModel()
+                      {
+                          Capacity=random.Next(1,6),
+                          Number=i+900,
+                          RoomType = (RoomType)random.Next(Enum.GetNames(typeof(RoomType)).Length),
+                          IsAvailable = random.Next(0, 2) == 0,
+                          PricePerAdultBed = random.Next(200,400),
+                          PricePerChildBed = random.Next(100,300)
+                      }
+                      );
+            }
+            return RedirectToAction(nameof(Index));
+        }
         // GET: Rooms/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
