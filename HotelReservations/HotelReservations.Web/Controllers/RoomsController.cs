@@ -9,25 +9,26 @@ using HotelReservations.Data;
 using HotelReservations.Data.Models;
 using HotelReservations.ViewModels.Rooms;
 using HotelReservations.Services;
+using HotelReservations.Services.Contracts;
 
 namespace HotelReservations.Web.Controllers
 {
     public class RoomsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly RoomsService service;
+        private readonly IRoomsService service;
 
-        public RoomsController(ApplicationDbContext context,RoomsService service)
+        public RoomsController(ApplicationDbContext context, IRoomsService service)
         {
             _context = context;
             this.service = service;
         }
 
         // GET: Rooms
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(IndexRoomsViewModel model)
         {
-            var applicationDbContext = _context.Rooms.Include(r => r.Reservation);
-            return View(await applicationDbContext.ToListAsync());
+            model = await service.GetRoomsAsync(model);
+            return View(model);
         }
 
         // GET: Rooms/Details/5
@@ -65,6 +66,7 @@ namespace HotelReservations.Web.Controllers
             if (ModelState.IsValid)
             {
                 await service.CreateRoomAsync(model);
+                return RedirectToAction(nameof(Index));
             }
             return View(model);
         }

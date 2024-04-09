@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HotelReservations.ViewModels.Shared;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace HotelReservations.ViewModels.Clients
 {
     public class ClientDetailsViewModel
     {
+
         public string Id { get; set; }
         [Display(Name = "First name")]
         public string FirstName { get; set; }
@@ -25,6 +27,7 @@ namespace HotelReservations.ViewModels.Clients
 
         [Display(Name = "Adult")]
         public bool IsAdult { get; set; }
+        public ICollection<ClientHistoryViewModel> History { get; set; }
 
     }
 }

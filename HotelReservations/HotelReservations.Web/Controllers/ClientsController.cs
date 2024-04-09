@@ -9,6 +9,9 @@ using HotelReservations.Data;
 using HotelReservations.Data.Models;
 using HotelReservations.ViewModels.Clients;
 using HotelReservations.Services.Contracts;
+using HotelReservations.ViewModels.Users;
+using Castle.Core.Resource;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace HotelReservations.Web.Controllers
 {
@@ -38,7 +41,36 @@ namespace HotelReservations.Web.Controllers
             return View(model);
 
         }
+        public async Task<IActionResult> Seed()
+        {
+            List<string> firstName = new List<string>() { "John", "Alex","Ati","Djemal","Toni", "Jane", "Jack", "Michael", "William" };
+            List<string> lastName = new List<string>() { "Johnson", "Alexandrov","Gagov","Djivgova","Kichikov", "Brown", "Martinez" };
+            Random random = new Random();
+            var x = random.Next(100000000, 999999999);
+            Boolean isAdult = false;
+            for (int i = 0; i < firstName.Count; i++)
+            {
+                if (firstName[i].Length>3)
+                {
+                    isAdult = true;
+                }
+            }
+            for (int i = 1; i <= 50; i++)
+            {
+                string result = await service.CreateClientAsync(
 
+                      new ClientCreateViewModel()
+                      {
+                          FirstName = $"{firstName[random.Next(0,firstName.Count)]}",
+                          LastName = $"{lastName[random.Next(0, lastName.Count)]}",
+                          PhoneNumber = x.ToString("D10"),
+                          IsAdult=isAdult,
+                          Email = $"client{i}@app.bg"
+                      }
+                      );
+            }
+            return RedirectToAction(nameof(Index));
+        }
         // GET: Clients/Create
         public IActionResult Create()
         {

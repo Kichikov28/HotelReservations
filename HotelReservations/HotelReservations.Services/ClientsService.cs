@@ -65,19 +65,13 @@ namespace HotelReservations.Services
                     IsAdult = client.IsAdult,
                     PhoneNumber = client.Number,
                 };
-
-                //model.GetHashC = await context.CustomerHistory
-                //   .Where(x => x.CustomerId == client.Id)
-                //   .Skip((model.Page - 1) * model.ItemsPerPage)
-                //   .Take(model.ItemsPerPage)
-                //   .Select(x => new CustomerHistoryViewModel()
+                //model.History = await context.Clients
+                //    .Where(x => x.Id == client.Id)
+                //   .Select(x => new ClientHistoryViewModel()
                 //   {
-                //       CustomerId = x.CustomerId,
-                //       ResPrice = x.ResPrice,
-                //       Customer = x.Customer,
-                //       ResAccomDate = x.ResAccomDate,
-                //       ResLeaveDate = x.ResLeaveDate,
-                //       ResRoomNumber = x.ResRoomNumber,
+                //       ResPrice = x.Reservation.Price,
+                //       AccomodationDate = x.Reservation.AccommodationDate,
+                //       LeaveDate = x.Reservation.LeaveDate,
                 //   })
                 //    .ToListAsync();
 

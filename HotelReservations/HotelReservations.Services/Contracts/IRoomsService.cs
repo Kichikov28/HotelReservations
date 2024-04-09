@@ -10,5 +10,6 @@ namespace HotelReservations.Services.Contracts
     public interface IRoomsService
     {
         public Task<string> CreateRoomAsync(CreateRoomViewModel model);
+        public Task<IndexRoomsViewModel> GetRoomsAsync(IndexRoomsViewModel model);
     }
 }
