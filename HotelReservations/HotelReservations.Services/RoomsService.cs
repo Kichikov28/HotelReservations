@@ -40,21 +40,42 @@ namespace HotelReservations.Services
         }
         public async Task<IndexRoomsViewModel> GetRoomsAsync(IndexRoomsViewModel model)
         {
-            model.Rooms = await this.context.Rooms
+            if (model == null)
+            {
+                model = new IndexRoomsViewModel(0);
+            }
+            IQueryable<Room> dataRooms = context.Rooms;
+
+            if (model?.Capacity > 0)
+            {
+                dataRooms = dataRooms.Where(x => x.Capacity == model.Capacity);
+            }
+            if (!string.IsNullOrEmpty(model?.FilterByType))
+            {
+                dataRooms = dataRooms.Where(x => x.Type == Enum.Parse<RoomType>(model.FilterByType));
+            }
+
+            if (!string.IsNullOrEmpty(model?.IsAvailable.ToString()))
+            {
+                bool isAvailable = Convert.ToBoolean(model.IsAvailable);
+                dataRooms = dataRooms.Where(x => x.IsAvailable == isAvailable);
+            }
+
+            model.Rooms = await dataRooms
                 .Skip((model.Page - 1) * model.ItemsPerPage)
                 .Take(model.ItemsPerPage)
-                .Select(x => new IndexRoomViewModel()
+                .Select(room => new IndexRoomViewModel()
                 {
-                    Id = x.Id,
-                    Capacity = x.Capacity,
-                    RoomType = x.Type,
-                    IsAvailable = x.IsAvailable,
-                    PricePerAdultBed = x.PricePerAdultBed,
-                    PricePerChildBed = x.PricePerChildBed,
-                    Number = x.Number,
-                })
-                .ToListAsync();
-            model.ElementsCount = await context.Clients.CountAsync();
+                    Id = room.Id,
+                    Capacity = room.Capacity,
+                    Number = room.Number,
+                    RoomType = room.Type,
+                    IsAvailable = room.IsAvailable,
+                    PricePerAdultBed = room.PricePerAdultBed,
+                    PricePerChildBed = room.PricePerChildBed,
+                }).ToListAsync();
+
+            model.ElementsCount = await context.Rooms.CountAsync();
             return model;
         }
         public async Task<RoomDetailsViewModel> GetRoomDetailsAsync(string id)
@@ -65,7 +86,7 @@ namespace HotelReservations.Services
             {
                 RoomDetailsViewModel model = new RoomDetailsViewModel()
                 {
-                    Id=room.Id,
+                    Id = room.Id,
                     Capacity = room.Capacity,
                     IsAvailable = room.IsAvailable,
                     Number = room.Number,

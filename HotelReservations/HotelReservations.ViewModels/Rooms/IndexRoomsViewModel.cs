@@ -14,8 +14,11 @@ namespace HotelReservations.ViewModels.Rooms
         }
         public IndexRoomsViewModel():base(0)
         {
-                
+
         }
+        public string FilterByType { get; set; }
+        public int Capacity { get; set; }
+        public bool IsAvailable { get; set; }
         public ICollection<IndexRoomViewModel> Rooms { get; set; } = new List<IndexRoomViewModel>();
     }
 }

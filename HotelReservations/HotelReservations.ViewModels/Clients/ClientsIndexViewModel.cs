@@ -16,6 +16,7 @@ namespace HotelReservations.ViewModels.Clients
         {
 
         }
+        public string FilterByName { get; set; }
         public ICollection<ClientIndexViewModel> Clients { get; set; } = new List<ClientIndexViewModel>();
     }
 }

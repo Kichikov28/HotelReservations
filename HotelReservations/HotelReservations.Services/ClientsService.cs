@@ -3,6 +3,8 @@ using HotelReservations.Data;
 using HotelReservations.Data.Models;
 using HotelReservations.Services.Contracts;
 using HotelReservations.ViewModels.Clients;
+using HotelReservations.ViewModels.Users;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -36,7 +38,20 @@ namespace HotelReservations.Services
         }
         public async Task<ClientsIndexViewModel> GetClientsAsync(ClientsIndexViewModel model)
         {
-            model.Clients = await this.context.Clients
+            if (model == null)
+            {
+                model = new ClientsIndexViewModel(0);
+            }
+            IQueryable<Client> dataClients = context.Clients;
+
+            if (!string.IsNullOrWhiteSpace(model.FilterByName))
+            {
+                dataClients = dataClients.Where(x => x.FirstName.Contains(model.FilterByName) || x.LastName.Contains(model.FilterByName));
+            }
+
+            model.ElementsCount = await dataClients.CountAsync();
+
+            model.Clients = await dataClients
                 .Skip((model.Page - 1) * model.ItemsPerPage)
                 .Take(model.ItemsPerPage)
                 .Select(x => new ClientIndexViewModel()
@@ -49,7 +64,6 @@ namespace HotelReservations.Services
                     PhoneNumber = x.Number,
                 })
                 .ToListAsync();
-            model.ElementsCount = await this.context.Clients.CountAsync();
             return model;
         }
         public async Task<ClientDetailsViewModel> GetClientDetailsByIdAsync(string id)
