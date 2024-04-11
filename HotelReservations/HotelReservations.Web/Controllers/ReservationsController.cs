@@ -7,23 +7,26 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HotelReservations.Data;
 using HotelReservations.Data.Models;
+using HotelReservations.ViewModels.Reservations;
+using HotelReservations.Services.Contracts;
 
 namespace HotelReservations.Web.Controllers
 {
     public class ReservationsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IReservationsService service;
 
-        public ReservationsController(ApplicationDbContext context)
+        public ReservationsController(IReservationsService service)
         {
-            _context = context;
+            this.service = service;
         }
 
         // GET: Reservations
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(IndexReservationsViewModel model)
         {
-            var applicationDbContext = _context.Reservations.Include(r => r.User);
-            return View(await applicationDbContext.ToListAsync());
+            model = await service.GetReservationsAsync(model);
+            return View(model);
         }
 
         // GET: Reservations/Details/5

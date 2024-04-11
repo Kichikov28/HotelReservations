@@ -13,7 +13,7 @@ namespace HotelReservations.ViewModels.Reservations
     public class CreateReservationViewModel
     {
         public string UserId { get; set; }
-        public ICollection<Client> Customers { get; set; } =
+        public ICollection<Client> Clients { get; set; } =
             new List<Client>();
         [Required(ErrorMessage = "Please select and submit a room")]
         public string RoomId { get; set; }

@@ -4,32 +4,20 @@
 	ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>Reservations</h1>
 
 <p>
-	<a asp-action="Create">Create New</a>
+	<a asp-action="Create" class="btn btn-primary">Create New Reservation</a>
 </p>
 <table class="table">
 	<thead>
 		<tr>
-			<th>
-				ReservedRoom
-			</th>
-			<th>
-				AccommodationDate
-			</th>
-			<th>
-				LeaveDate
-			</th>
-			<th>
-				Breakfast
-			</th>
-			<th>
-				AllInclusive
-			</th>
-			<th>
-				Price
-			</th>
+			<th>ReservedRoom</th>
+			<th>AccommodationDate</th>
+			<th>LeaveDate</th>
+			<th>Breakfast</th>
+			<th>AllInclusive</th>
+			<th>Price</th>
 			<th></th>
 		</tr>
 	</thead>
@@ -64,3 +52,9 @@
 		}
 	</tbody>
 </table>
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}
+<partial name="_PagingPartial" />

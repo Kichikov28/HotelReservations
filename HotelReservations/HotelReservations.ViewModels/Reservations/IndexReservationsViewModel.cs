@@ -13,6 +13,10 @@ namespace HotelReservations.ViewModels.Reservations
         {
         }
 
-        public ICollection<IndexReservationViewModel> Reservations { get; set; }
+		public IndexReservationsViewModel() : base(0)
+		{
+
+		}
+		public ICollection<IndexReservationViewModel> Reservations { get; set; } = new List<IndexReservationViewModel>();
     }
 }
