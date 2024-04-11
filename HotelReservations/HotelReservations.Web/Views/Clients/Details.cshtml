@@ -43,7 +43,30 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <h4>Reservation History</h4>
+    <hr />
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Accommodation Date</th>
+                <th>Leave Date</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var reservation in Model.History)
+            {
+                <tr>
+                    <td>@reservation.AccomodationDate.ToShortDateString()</td>
+                    <td>@reservation.LeaveDate.ToShortDateString()</td>
+                    <td>@reservation.Price</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-secondary">Edit</a> |
+    <a asp-action="Index" class="btn btn-info">Back to List</a>
     
 </div>

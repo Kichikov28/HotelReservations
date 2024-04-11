@@ -13,6 +13,7 @@ namespace HotelReservations.ViewModels.Clients
     public class ClientHistoryViewModel
     {
         public int ResRoomNumber { get; set; }
+        public string RoomId { get; set; }
         public Room Room { get; set; }
         [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}", ApplyFormatInEditMode = true)]
         [DataType(DataType.Date)]
@@ -27,6 +28,6 @@ namespace HotelReservations.ViewModels.Clients
 
         [Display(Name = "Total price")]
         [DataType(DataType.Currency)]
-        public decimal ResPrice { get; set; }
+        public decimal Price { get; set; }
     }
 }

@@ -14,115 +14,123 @@ using System.Threading.Tasks;
 
 namespace HotelReservations.Services
 {
-    public class ClientsService : IClientsService
-    {
-        private readonly ApplicationDbContext context;
+	public class ClientsService : IClientsService
+	{
+		private readonly ApplicationDbContext context;
 
-        public ClientsService(ApplicationDbContext context)
-        {
-            this.context = context;
-        }
-        public async Task<string> CreateClientAsync(ClientCreateViewModel model)
-        {
-            Client client = new Client()
-            {
-                Email = model.Email,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                IsAdult = model.IsAdult,
-                Number = model.PhoneNumber,
-            };
-            await this.context.Clients.AddAsync(client);
-            await this.context.SaveChangesAsync();
-            return client.Id;
-        }
-        public async Task<ClientsIndexViewModel> GetClientsAsync(ClientsIndexViewModel model)
-        {
-            if (model == null)
-            {
-                model = new ClientsIndexViewModel(0);
-            }
-            IQueryable<Client> dataClients = context.Clients;
+		public ClientsService(ApplicationDbContext context)
+		{
+			this.context = context;
+		}
+		public async Task<string> CreateClientAsync(ClientCreateViewModel model)
+		{
+			Client client = new Client()
+			{
+				Email = model.Email,
+				FirstName = model.FirstName,
+				LastName = model.LastName,
+				IsAdult = model.IsAdult,
+				Number = model.PhoneNumber,
+			};
+			await this.context.Clients.AddAsync(client);
+			await this.context.SaveChangesAsync();
+			return client.Id;
+		}
+		public async Task<ClientsIndexViewModel> GetClientsAsync(ClientsIndexViewModel model)
+		{
+			if (model == null)
+			{
+				model = new ClientsIndexViewModel(0);
+			}
+			IQueryable<Client> dataClients = context.Clients;
 
-            if (!string.IsNullOrWhiteSpace(model.FilterByName))
-            {
-                dataClients = dataClients.Where(x => x.FirstName.Contains(model.FilterByName) || x.LastName.Contains(model.FilterByName));
-            }
+			if (!string.IsNullOrWhiteSpace(model.FilterByName))
+			{
+				dataClients = dataClients.Where(x => x.FirstName.Contains(model.FilterByName) || x.LastName.Contains(model.FilterByName));
+			}
 
-            model.ElementsCount = await dataClients.CountAsync();
+			model.ElementsCount = await dataClients.CountAsync();
 
-            model.Clients = await dataClients
-                .Skip((model.Page - 1) * model.ItemsPerPage)
-                .Take(model.ItemsPerPage)
-                .Select(x => new ClientIndexViewModel()
-                {
-                    Id = x.Id,
-                    Email = x.Email,
-                    FirstName = x.FirstName,
-                    LastName = x.LastName,
-                    IsAdult = x.IsAdult,
-                    PhoneNumber = x.Number,
-                })
-                .ToListAsync();
-            return model;
-        }
-        public async Task<ClientDetailsViewModel> GetClientDetailsByIdAsync(string id)
-        {
-            Client client = await this.context.Clients.FindAsync(id);
-            if (client != null)
-            {
-                ClientDetailsViewModel model = new ClientDetailsViewModel()
-                {
-                    Email = client.Email,
-                    FirstName = client.FirstName,
-                    LastName = client.LastName,
-                    IsAdult = client.IsAdult,
-                    PhoneNumber = client.Number,
-                };
-                //model.History = await context.Clients
-                //    .Where(x => x.Id == client.Id)
-                //   .Select(x => new ClientHistoryViewModel()
-                //   {
-                //       ResPrice = x.Reservation.Price,
-                //       AccomodationDate = x.Reservation.AccommodationDate,
-                //       LeaveDate = x.Reservation.LeaveDate,
-                //   })
-                //    .ToListAsync();
+			model.Clients = await dataClients
+				.Skip((model.Page - 1) * model.ItemsPerPage)
+				.Take(model.ItemsPerPage)
+				.Select(x => new ClientIndexViewModel()
+				{
+					Id = x.Id,
+					Email = x.Email,
+					FirstName = x.FirstName,
+					LastName = x.LastName,
+					IsAdult = x.IsAdult,
+					PhoneNumber = x.Number,
+				})
+				.ToListAsync();
+			return model;
+		}
+		public async Task<ClientDetailsViewModel> GetClientDetailsByIdAsync(string id)
+		{
+			Client client = await this.context.Clients.FindAsync(id);
+			if (client != null)
+			{
+				ClientDetailsViewModel model = new ClientDetailsViewModel()
+				{
+					Email = client.Email,
+					FirstName = client.FirstName,
+					LastName = client.LastName,
+					IsAdult = client.IsAdult,
+					PhoneNumber = client.Number,
+				};
 
-                return model;
-            }
-            return null;
-        }
-        public async Task<ClientEditViewModel> EditCustomerByIdAsync(string id)
-        {
-            Client client = await this.context.Clients.FindAsync(id);
-            if (client != null)
-            {
-                return new ClientEditViewModel()
-                {
-                    Id = client.Id,
-                    Email = client.Email,
-                    FirstName = client.FirstName,
-                    LastName = client.LastName,
-                    IsAdult = client.IsAdult,
-                    PhoneNumber = client.Number,
-                };
-            }
-            return null;
-        }
-        public async Task UpdateCustomerAsync(ClientEditViewModel model)
-        {
-            Client client = new Client()
-            {
-                Id = model.Id,
-                Email = model.Email,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                IsAdult = model.IsAdult,
-                Number = model.PhoneNumber,
-            };
-            context.Update(client);
-            await context.SaveChangesAsync();
-        }
-    }
+				return model;
+			}
+			return null;
+		}
+		public List<ClientHistoryViewModel> GetClientReservationHistory(string id)
+		{
+			var clientReservations = context.Reservations
+				   .Where(r => r.Clients.Any(c => c.Id == id))
+				   .Select(r => new ClientHistoryViewModel
+				   {
+					   ReservationId = r.Id,
+					   RoomId = r.RoomId,
+					   ResRoomNumber = r.Room.Number,
+					   AccomodationDate = r.AccommodationDate,
+					   LeaveDate = r.LeaveDate,
+					   Price = r.Price
+				   })
+				   .ToList();
+
+			return clientReservations;
+		}
+		public async Task<ClientEditViewModel> EditCustomerByIdAsync(string id)
+		{
+			Client client = await this.context.Clients.FindAsync(id);
+			if (client != null)
+			{
+				return new ClientEditViewModel()
+				{
+					Id = client.Id,
+					Email = client.Email,
+					FirstName = client.FirstName,
+					LastName = client.LastName,
+					IsAdult = client.IsAdult,
+					PhoneNumber = client.Number,
+				};
+			}
+			return null;
+		}
+		public async Task UpdateCustomerAsync(ClientEditViewModel model)
+		{
+			Client client = new Client()
+			{
+				Id = model.Id,
+				Email = model.Email,
+				FirstName = model.FirstName,
+				LastName = model.LastName,
+				IsAdult = model.IsAdult,
+				Number = model.PhoneNumber,
+			};
+			context.Update(client);
+			await context.SaveChangesAsync();
+		}
+	}
 }
