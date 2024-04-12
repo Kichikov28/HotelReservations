@@ -9,6 +9,8 @@ using HotelReservations.Data;
 using HotelReservations.Data.Models;
 using HotelReservations.ViewModels.Reservations;
 using HotelReservations.Services.Contracts;
+using HotelReservations.Services;
+using System.Security.Claims;
 
 namespace HotelReservations.Web.Controllers
 {
@@ -49,10 +51,10 @@ namespace HotelReservations.Web.Controllers
         }
 
         // GET: Reservations/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create(string roomdId)
         {
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
-            return View();
+            CreateReservationViewModel model = new CreateReservationViewModel();
+            return View(model);
         }
 
         // POST: Reservations/Create
@@ -60,16 +62,15 @@ namespace HotelReservations.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,RoomId,UserId,AccommodationDate,LeaveDate,HasBreakfast,HasAllInclusive,Price")] Reservation reservation)
+        public async Task<IActionResult> Create(CreateReservationViewModel model)
         {
+            model.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (ModelState.IsValid)
             {
-                _context.Add(reservation);
-                await _context.SaveChangesAsync();
+                await service.CreateReservationAsync(model);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", reservation.UserId);
-            return View(reservation);
+            return View(model);
         }
 
         // GET: Reservations/Edit/5

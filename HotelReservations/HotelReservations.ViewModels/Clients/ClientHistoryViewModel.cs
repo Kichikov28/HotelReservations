@@ -28,6 +28,6 @@ namespace HotelReservations.ViewModels.Clients
 
         [Display(Name = "Total price")]
         [DataType(DataType.Currency)]
-        public decimal Price { get; set; }
+        public double Price { get; set; }
     }
 }

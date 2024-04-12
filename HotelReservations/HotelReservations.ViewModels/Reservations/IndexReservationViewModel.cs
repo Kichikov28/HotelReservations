@@ -32,6 +32,6 @@ namespace HotelReservations.ViewModels.Reservations
         public bool HasAllInclusive { get; set; }
 
         [Display(Name = "Total price")]
-        public decimal Price { get; set; }
+        public double Price { get; set; }
     }
 }

@@ -18,10 +18,6 @@
                 <span asp-validation-for="RoomId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="UserId" class="control-label"></label>
-                <select asp-for="UserId" class ="form-control" asp-items="ViewBag.UserId"></select>
-            </div>
-            <div class="form-group">
                 <label asp-for="AccommodationDate" class="control-label"></label>
                 <input asp-for="AccommodationDate" class="form-control" />
                 <span asp-validation-for="AccommodationDate" class="text-danger"></span>
@@ -42,6 +38,24 @@
                 </label>
             </div>
             <div class="form-group">
+                <label for="clients" class="control-label">Clients</label>
+                <div id="clients">
+                    <div class="client">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <input type="text" name="Clients[0].FirstName" placeholder="First Name" class="form-control" />
+                            </div>
+                            <div class="col">
+                                <input type="text" name="Clients[0].LastName" placeholder="Last Name" class="form-control" />
+                            </div>
+                            <div class="col">
+                                <input type="text" name="Clients[0].Number" placeholder="Client Number" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
@@ -49,6 +63,7 @@
 </div>
 
 <div>
+        <a asp-controller="Clients" asp-action="Create" class="btn btn-outline-primary " style="margin: 10px 0px 10px 0px;">New Customer <i class="fa-regular fa-square-plus"></i></a>
     <a asp-action="Index">Back to List</a>
 </div>
 
