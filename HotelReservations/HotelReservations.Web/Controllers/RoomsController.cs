@@ -12,9 +12,11 @@ using HotelReservations.Services;
 using HotelReservations.Services.Contracts;
 using HotelReservations.ViewModels.Clients;
 using HotelReservations.Data.Models.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HotelReservations.Web.Controllers
 {
+    [Authorize(Roles = "Admin,User")]
     public class RoomsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -41,6 +43,7 @@ namespace HotelReservations.Web.Controllers
         }
 
         // GET: Rooms/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -49,6 +52,7 @@ namespace HotelReservations.Web.Controllers
         // POST: Rooms/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateRoomViewModel model)
@@ -62,6 +66,7 @@ namespace HotelReservations.Web.Controllers
         }
 
         // GET: Rooms/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(string id)
         {
             EditRoomViewModel model = await service.EditRoomAsync(id);
@@ -71,6 +76,7 @@ namespace HotelReservations.Web.Controllers
         // POST: Rooms/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EditRoomViewModel model)
@@ -100,6 +106,7 @@ namespace HotelReservations.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
         // GET: Rooms/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(string id)
         {
             if (id == null)
@@ -108,7 +115,7 @@ namespace HotelReservations.Web.Controllers
             }
 
             var room = await _context.Rooms
-                .Include(r => r.Reservation)
+              //  .Include(r => r.Reservation)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (room == null)
             {
@@ -119,6 +126,7 @@ namespace HotelReservations.Web.Controllers
         }
 
         // POST: Rooms/Delete/5
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)

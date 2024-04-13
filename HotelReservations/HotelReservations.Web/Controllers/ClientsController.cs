@@ -12,9 +12,11 @@ using HotelReservations.Services.Contracts;
 using HotelReservations.ViewModels.Users;
 using Castle.Core.Resource;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HotelReservations.Web.Controllers
 {
+    [Authorize(Roles = "Admin,User")]
     public class ClientsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -123,7 +125,7 @@ namespace HotelReservations.Web.Controllers
             }
 
             var client = await _context.Clients
-                .Include(c => c.Reservation)
+               // .Include(c => c.Reservation)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (client == null)
             {

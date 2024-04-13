@@ -12,9 +12,9 @@ namespace HotelReservations.Data.Models
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Number { get; set; }
-        public string Email { get; set; }
+        public string? Email { get; set; }
         public bool IsAdult { get; set; }
-        public string? ReservationId { get; set; }
-        public virtual Reservation Reservation { get; set; }
+        public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+
     }
 }

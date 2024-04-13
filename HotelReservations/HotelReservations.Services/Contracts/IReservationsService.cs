@@ -1,5 +1,6 @@
 ﻿using HotelReservations.Data.Models;
 using HotelReservations.ViewModels.Reservations;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,5 +15,7 @@ namespace HotelReservations.Services.Contracts
         public Task<IndexReservationsViewModel> GetReservationsAsync(IndexReservationsViewModel model);
         public Task<int> GetRoomCapacityAsync(string id);
         public Task<Client> FindClientAsync(Client clnt);
+
+        public Task<SelectList> GetFreeRooms();
     }
 }

@@ -22,28 +22,41 @@ namespace HotelReservations.Services
         {
             this.context = context;
         }
+
+
+        public async Task<SelectList> GetFreeRooms()
+        {
+            List<Room> rooms = context.Rooms.Where(x => x.IsAvailable == true).ToList();
+            return new SelectList(rooms, "Id", "Number");
+        }
+
         public async Task<CreateReservationViewModel> CreateReservationAsync(CreateReservationViewModel model)
         {
             User user = await context.Users.FindAsync(model.UserId);
             Room room = await context.Rooms.FindAsync(model.RoomId);
 
-            List<Client> clients = model.Clients
-                .Select(x => new Client
+            if (user == null || room == null)
+                return null; // Return null if user or room is not found
+
+            List<Client> selectedClients = await context.Clients.Select
+                (
+                x => new Client
                 {
                     FirstName = x.FirstName,
                     LastName = x.LastName,
-                    Number = x.Number,
-                }).ToList();
+                    Number = x.Number
+                }).ToListAsync();
+            double price = 0;
 
             Reservation reservation = new Reservation()
             {
                 User = user,
+                Room = room,
                 AccommodationDate = model.AccommodationDate,
                 LeaveDate = model.LeaveDate,
                 HasAllInclusive = model.HasAllInclusive,
                 HasBreakfast = model.HasBreakfast,
                 Price = CalculatePriceWithExtra(model.HasBreakfast, model.HasAllInclusive)
-
             };
 
             if (room.IsAvailable)
@@ -51,22 +64,18 @@ namespace HotelReservations.Services
                 ReserveRoom(room, reservation);
             }
 
+
             await context.Reservations.AddAsync(reservation);
             await context.SaveChangesAsync();
 
-            foreach (var client in model.Clients)
+            foreach (var client in selectedClients)
             {
-                Client client1 = new Client
+                //price += CalculatePrice(model.LeaveDate, model.AccommodationDate, room, client);
+                if (reservation.Clients.Count < room.Capacity)
                 {
-                    FirstName = client.FirstName,
-                    LastName = client.LastName,
-                    Number = client.Number,
-                };
-
-                reservation.Clients.Add(client);
-                reservation.Price +=CalculatePrice(model.LeaveDate, model.AccommodationDate, room, client);
+                    await AddClientToReservationAsync(client, reservation);
+                }
             }
-            await context.SaveChangesAsync();
             return model;
         }
         public async Task<IndexReservationsViewModel> GetReservationsAsync(IndexReservationsViewModel model)
@@ -137,6 +146,18 @@ namespace HotelReservations.Services
         //    }
         //    return null;
         //}
+        private async Task AddClientToReservationAsync(Client client, Reservation reservation)
+        {
+            // Assuming you have a DbSet<Client> in your context named "Clients"
+            // You can add the client to the database and associate it with the reservation
+            context.Clients.Add(client);
+
+            // Associate the client with the reservation
+            reservation.Clients.Add(client);
+
+            // Save changes to the database
+            await context.SaveChangesAsync();
+        }
         private double CalculatePrice(DateTime leaveDate, DateTime accomdate, Room room,
    Client client)
         {
@@ -200,10 +221,8 @@ x.LastName == clnt.LastName && x.Number == clnt.Number);
             if (reservation.Room != null)
             {
                 reservation.Room.IsAvailable = true;
-                reservation.Room.Reservation = null;
             }
             reservation.RoomId = room.Id;
-            room.ReservationId = reservation.Id;
         }
     }
 }

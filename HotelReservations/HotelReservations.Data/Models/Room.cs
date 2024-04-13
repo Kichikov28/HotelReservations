@@ -10,8 +10,7 @@
         public bool IsAvailable { get; set; }
         public double PricePerAdultBed { get; set; }
         public double PricePerChildBed { get; set; }
-        public string? ReservationId { get; set; }
-        public virtual Reservation Reservation { get; set; }
+        public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();   
 
     }
 }

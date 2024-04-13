@@ -11,9 +11,11 @@ using HotelReservations.ViewModels.Reservations;
 using HotelReservations.Services.Contracts;
 using HotelReservations.Services;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HotelReservations.Web.Controllers
 {
+    [Authorize(Roles = "Admin,User")]
     public class ReservationsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -51,9 +53,10 @@ namespace HotelReservations.Web.Controllers
         }
 
         // GET: Reservations/Create
-        public async Task<IActionResult> Create(string roomdId)
+        public async Task<IActionResult> Create()
         {
             CreateReservationViewModel model = new CreateReservationViewModel();
+            model.Rooms = await service.GetFreeRooms();
             return View(model);
         }
 
@@ -65,11 +68,13 @@ namespace HotelReservations.Web.Controllers
         public async Task<IActionResult> Create(CreateReservationViewModel model)
         {
             model.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            ModelState.MarkFieldValid("Clients");
             if (ModelState.IsValid)
             {
                 await service.CreateReservationAsync(model);
                 return RedirectToAction(nameof(Index));
             }
+            model.Rooms = await service.GetFreeRooms();
             return View(model);
         }
 

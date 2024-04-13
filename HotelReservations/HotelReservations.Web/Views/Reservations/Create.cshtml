@@ -12,9 +12,9 @@
     <div class="col-md-4">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="RoomId" class="control-label"></label>
-                <input asp-for="RoomId" class="form-control" />
+            <div class=" form-group">
+                <label asp-for="RoomId" class="control-label">Select Room:</label>
+                <select asp-for="RoomId" asp-items="@Model.Rooms" class="form-control"></select>
                 <span asp-validation-for="RoomId" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -55,6 +55,44 @@
                     </div>
                 </div>
             </div>
+            @* <div class="form-group">
+                <label for="clients" class="control-label">Clients</label>
+                <div id="clients">
+                    <div class="client">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <select name="Clients[0].FirstName" class="form-control">
+                                    <option value="">Select First Name</option>
+                                    @foreach (var client in Model.Clients)
+                                    {
+                                        <option value="@client.FirstName">@client.FirstName</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select name="Clients[0].LastName" class="form-control">
+                                    <option value="">Select Last Name</option>
+                                    @foreach (var client in Model.Clients)
+                                    {
+                                        <option value="@client.LastName">@client.LastName</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select name="Clients[0].Number" class="form-control">
+                                    <option value="">Select Client Number</option>
+                                    @foreach (var client in Model.Clients)
+                                    {
+                                        <option value="@client.Number">@client.Number</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> *@
+
+
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
@@ -63,10 +101,12 @@
 </div>
 
 <div>
-        <a asp-controller="Clients" asp-action="Create" class="btn btn-outline-primary " style="margin: 10px 0px 10px 0px;">New Customer <i class="fa-regular fa-square-plus"></i></a>
+    <a asp-controller="Clients" asp-action="Create" class="btn btn-outline-primary " style="margin: 10px 0px 10px 0px;">New Customer <i class="fa-regular fa-square-plus"></i></a>
     <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

@@ -60,7 +60,6 @@ namespace HotelReservations.Services
                 bool isAvailable = Convert.ToBoolean(model.IsAvailable);
                 dataRooms = dataRooms.Where(x => x.IsAvailable == isAvailable);
             }
-
             model.Rooms = await dataRooms
                 .Skip((model.Page - 1) * model.ItemsPerPage)
                 .Take(model.ItemsPerPage)
@@ -75,6 +74,7 @@ namespace HotelReservations.Services
                     PricePerChildBed = room.PricePerChildBed,
                 }).ToListAsync();
 
+          
             model.ElementsCount = await context.Rooms.CountAsync();
             return model;
         }
