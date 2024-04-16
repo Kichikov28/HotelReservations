@@ -9,6 +9,7 @@ using HotelReservations.Data.Models;
 using HotelReservations.Services.Contracts;
 using HotelReservations.ViewModels.Clients;
 using HotelReservations.ViewModels.Reservations;
+using HotelReservations.ViewModels.Rooms;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,70 +24,61 @@ namespace HotelReservations.Services
             this.context = context;
         }
 
-
-        public async Task<SelectList> GetFreeRooms()
-        {
-            List<Room> rooms = context.Rooms.Where(x => x.IsAvailable == true).ToList();
-            return new SelectList(rooms, "Id", "Number");
-        }
-
-        public async Task<CreateReservationViewModel> CreateReservationAsync(CreateReservationViewModel model)
+        public async Task CreateReservationAsync(CreateReservationViewModel model)
         {
             User user = await context.Users.FindAsync(model.UserId);
             Room room = await context.Rooms.FindAsync(model.RoomId);
 
-            if (user == null || room == null)
-                return null; // Return null if user or room is not found
-
-            List<Client> selectedClients = await context.Clients.Select
-                (
-                x => new Client
+            List<Client> SelectedClients = model.Clients
+                .Select(x => new Client
                 {
                     FirstName = x.FirstName,
                     LastName = x.LastName,
-                    Number = x.Number
-                }).ToListAsync();
-            double price = 0;
+                    Number = x.Number,
+                }).ToList();
 
+            //Create Reservation
             Reservation reservation = new Reservation()
             {
                 User = user,
-                Room = room,
                 AccommodationDate = model.AccommodationDate,
                 LeaveDate = model.LeaveDate,
                 HasAllInclusive = model.HasAllInclusive,
                 HasBreakfast = model.HasBreakfast,
-                Price = CalculatePriceWithExtra(model.HasBreakfast, model.HasAllInclusive)
             };
+            reservation.Clients = new List<Client>();
 
-            if (room.IsAvailable)
+            reservation.Price = CalculatePriceWithExtras(model.HasBreakfast, model.HasAllInclusive);
+
+            if (room.Id != reservation.RoomId)
             {
-                ReserveRoom(room, reservation);
-            }
-
-
-            await context.Reservations.AddAsync(reservation);
-            await context.SaveChangesAsync();
-
-            foreach (var client in selectedClients)
-            {
-                //price += CalculatePrice(model.LeaveDate, model.AccommodationDate, room, client);
-                if (reservation.Clients.Count < room.Capacity)
+                Reservation roomres = await context.Reservations.FirstOrDefaultAsync(x => x.RoomId == room.Id);
+                if (roomres == null && room.IsAvailable)
                 {
-                    await AddClientToReservationAsync(client, reservation);
+                    ReserveRoom(room, reservation);
                 }
             }
-            return model;
+
+            //Add Reservation to database and save
+            await this.context.Reservations.AddAsync(reservation);
+            await this.context.SaveChangesAsync();
+
+            foreach (var cust in SelectedClients)
+            {
+                Client Client = await FindClientAsync(cust);
+                if (Client.Reservation == null && room.Capacity > reservation.Clients.Count)
+                {
+                    await AddClientToReservationAsync(Client, reservation);
+                    reservation.Price += CalculatePrice(model.LeaveDate, model.AccommodationDate, room, Client);
+                }
+            }
+
+            //Attach instance of Reservation
+            context.Reservations.Attach(reservation);
+            await this.context.SaveChangesAsync();
         }
         public async Task<IndexReservationsViewModel> GetReservationsAsync(IndexReservationsViewModel model)
         {
-            if (model == null)
-            {
-                model = new IndexReservationsViewModel(0);
-            }
-
-            model.ElementsCount = await context.Reservations.CountAsync();
-
             model.Reservations = await context.Reservations
                 .Skip((model.Page - 1) * model.ItemsPerPage)
                 .Take(model.ItemsPerPage)
@@ -102,90 +94,327 @@ namespace HotelReservations.Services
                     Price = x.Price,
                 })
                 .ToListAsync();
+            model.ElementsCount = await this.context.Reservations.CountAsync();
             return model;
         }
-        //public async Task<EditReservationViewModel> EditReservationByIdAsync(string id)
-        //{
-        //    Reservation reservation = await context.Reservations.FindAsync(id);
-        //    if (reservation != null)
-        //    {
-        //        EditReservationViewModel model = new EditReservationViewModel()
-        //        {
-        //            Id = reservation.Id,
-        //            UserId = reservation.UserId,
-        //            RoomId = reservation.RoomId,
-        //            AccommodationDate = reservation.AccommodationDate,
-        //            LeaveDate = reservation.LeaveDate,
-        //            HasAllInclusive = reservation.HasAllInclusive,
-        //            HasBreakfast = reservation.HasBreakfast,
-        //        };
-        //        model.CustomersToRemove = reservation.Clients.Select(x => new ClientIndexViewModel()
-        //        {
-        //            Id = x.Id,
-        //            Email = x.Email,
-        //            FirstName = x.FirstName,
-        //            IsAdult = x.IsAdult,
-        //            LastName = x.LastName,
-        //            PhoneNumber = x.Number,
-        //        }).ToList();
-
-        //        SelectList selectList = new SelectList(await GetAllRoomsSelectListAsync(model), "Id", "Number");
-        //        model.Rooms = selectList;
-
-        //        if (!String.IsNullOrEmpty(model.RoomId) && await GetRoomCapacityAsync(model.RoomId) > 0)
-        //        {
-        //            model.SelectedRoomCap = await GetRoomCapacityAsync(model.RoomId);
-
-        //            for (int i = 0; i < model.SelectedRoomCap - reservation.Clients.Count; i++)
-        //            {
-        //                model.ClientsToAdd.Add(new Client());
-        //            }
-
-        //        }
-        //        return model;
-        //    }
-        //    return null;
-        //}
-        private async Task AddClientToReservationAsync(Client client, Reservation reservation)
+        public async Task<DetailsReservationViewModel> GetReservationDetailsAsync(string id)
         {
-            // Assuming you have a DbSet<Client> in your context named "Clients"
-            // You can add the client to the database and associate it with the reservation
-            context.Clients.Add(client);
+            Reservation reservation = await this.context.Reservations.FindAsync(id);
 
-            // Associate the client with the reservation
-            reservation.Clients.Add(client);
+            if (reservation != null)
+            {
+                DetailsReservationViewModel model = new DetailsReservationViewModel()
+                {
+                    Id = reservation.Id,
+                    UserId = reservation.UserId,
+                    AccommodationDate = reservation.AccommodationDate,
+                    LeaveDate = reservation.LeaveDate,
+                    HasAllInclusive = reservation.HasAllInclusive,
+                    HasBreakfast = reservation.HasBreakfast,
+                    Price = reservation.Price,
+                };
 
-            // Save changes to the database
+                //Get Clients for Current Reservation
+                model.Clients = await context.Clients
+                    .Where(x => x.ReservationId == model.Id)
+                    .Select(x => new ClientIndexViewModel()
+                    {
+                        Id = x.Id,
+                        Email = x.Email,
+                        FirstName = x.FirstName,
+                        LastName = x.LastName,
+                        IsAdult = x.IsAdult,
+                        PhoneNumber = x.Number,
+                    })
+                .ToListAsync();
+                return model;
+            }
+            return null;
+        }
+        public async Task<EditReservationViewModel> EditReservationByIdAsync(string id)
+        {
+            Reservation reservation = await context.Reservations.FindAsync(id);
+            if (reservation != null)
+            {
+                EditReservationViewModel model = new EditReservationViewModel()
+                {
+                    Id = reservation.Id,
+                    UserId = reservation.UserId,
+                    RoomId = reservation.RoomId,
+                    AccommodationDate = reservation.AccommodationDate,
+                    LeaveDate = reservation.LeaveDate,
+                   // HasAllInclusive = reservation.HasAllInclusive,
+                   // HasBreakfast = reservation.HasBreakfast,
+                };
+                model.ClientsToRemove = reservation.Clients.Select(x => new ClientIndexViewModel()
+                {
+                    Id = x.Id,
+                    Email = x.Email,
+                    FirstName = x.FirstName,
+                    IsAdult = x.IsAdult,
+                    LastName = x.LastName,
+                    PhoneNumber = x.Number,
+                }).ToList();
+
+                SelectList selectList = new SelectList(await GetAllRoomsSelectListAsync(model), "Id", "Number");
+              //  model.Rooms = selectList;
+
+                if (!String.IsNullOrEmpty(model.RoomId) && await GetRoomCapacityAsync(model.RoomId) > 0)
+                {
+                  //  model.SelectedRoomCap = await GetRoomCapacityAsync(model.RoomId);
+
+                    //for (int i = 0; i < model.SelectedRoomCap - reservation.Clients.Count; i++)
+                    //{
+                    //    model.ClientsToAdd.Add(new Client());
+                    //}
+
+                }
+                return model;
+            }
+            return null;
+        }
+        //public async Task UpdateReservationAsync(EditReservationViewModel editmodel)
+        //{
+        //    User user = await context.Users.FindAsync(editmodel.UserId);
+        //    Room room = await context.Rooms.FindAsync(editmodel.RoomId);
+        //    Reservation reservation = await context.Reservations.FindAsync(editmodel.Id);
+
+        //    reservation.User = user;
+
+        //    if (room.Id != reservation.RoomId)
+        //    {
+        //        ReserveRoom(room, reservation);
+        //    }
+
+        //    reservation.AccommodationDate = editmodel.AccommodationDate;
+        //    reservation.LeaveDate = editmodel.LeaveDate;
+
+        //    reservation.HasAllInclusive = editmodel.HasAllInclusive;
+        //    reservation.HasBreakfast = editmodel.HasBreakfast;
+
+        //    reservation.Price = CalculateInitialPrice(editmodel.HasBreakfast, editmodel.HasAllInclusive);
+
+        //    List<Client> ClientsToAdd = editmodel.ClientsToAdd
+        //    .Select(x => new Client
+        //    {
+        //        FirstName = x.FirstName,
+        //        LastName = x.LastName,
+        //        Number = x.Number,
+        //    }).ToList();
+
+        //    foreach (var cust in ClientsToAdd)
+        //    {
+        //        Client Client = await FindClientAsync(cust);
+        //        if (Client != null && Client.ReservationId != reservation.Id)
+        //        {
+        //            await AddClientToReservationAsync(Client, reservation);
+        //        }
+        //    }
+
+        //    foreach (var cust in editmodel.ClientsToRemove)
+        //    {
+        //        Client Client = await context.Clients.FindAsync(cust.Id);
+        //        if (Client != null && Client.ReservationId == reservation.Id)
+        //        {
+        //            await RemoveClientReservationAsync(Client, reservation);
+        //        }
+        //    }
+
+
+        //    foreach (var item in reservation.Clients)
+        //    {
+        //        reservation.Price += CalculatePrice(editmodel.LeaveDate, editmodel.AccommodationDate, room, item);
+        //    }
+
+
+
+
+        //    context.Update(reservation);
+        //    await context.SaveChangesAsync();
+        //    if (!reservation.Clients.Any())
+        //    {
+        //        context.Remove(reservation);
+        //        if (reservation.Room != null)
+        //        {
+        //            reservation.Room.IsAvailable = true;
+        //            reservation.Room.Reservation = null;
+        //        }
+        //        await context.SaveChangesAsync();
+        //    }
+        //}
+        public async Task<DetailsReservationViewModel> GetReservationToDeleteAsync(string id)
+        {
+            Reservation reservation = await this.context.Reservations.FindAsync(id);
+            if (reservation != null)
+            {
+                DetailsReservationViewModel model = new DetailsReservationViewModel()
+                {
+                    Id = reservation.Id,
+                    AccommodationDate = reservation.AccommodationDate,
+                    LeaveDate = reservation.LeaveDate,
+                    UserId = reservation.UserId,
+                    HasAllInclusive = reservation.HasAllInclusive,
+                    HasBreakfast = reservation.HasBreakfast,
+                    Price = reservation.Price,
+                };
+
+                //Get Clients for Current Reservation
+                model.Clients = await context.Clients
+                    .Where(x => x.ReservationId == model.Id)
+                    .Select(x => new ClientIndexViewModel()
+                    {
+                        Id = x.Id,
+                        Email = x.Email,
+                        FirstName = x.FirstName,
+                        LastName = x.LastName,
+                        IsAdult = x.IsAdult,
+                        PhoneNumber = x.Number,
+                    })
+                .ToListAsync();
+                return model;
+            }
+            return null;
+        }
+        public async Task DeleteReservationAsync(DetailsReservationViewModel model)
+        {
+            Reservation r = await this.context.Reservations.FindAsync(model.Id);
+            if (r != null)
+            {
+                foreach (var cust in r.Clients)
+                {
+                    cust.Reservation = null;
+                }
+
+                if (r.Room != null)
+                {
+                    r.Room.IsAvailable = true;
+                    r.Room.Reservation = null;
+                }
+                this.context.Reservations.Remove(r);
+                await this.context.SaveChangesAsync();
+            }
+        }
+        private static void ReserveRoom(Room room, Reservation reservation)
+        {
+            room.IsAvailable = false;
+            if (reservation.Room != null)
+            {
+                reservation.Room.IsAvailable = true;
+                reservation.Room.Reservation = null;
+            }
+            reservation.RoomId = room.Id;
+            room.ReservationId = reservation.Id;
+        }
+        public async Task<List<SelectListRoomViewModel>> GetFreeRoomsSelectListAsync()
+        {
+            List<SelectListRoomViewModel> SelectList = await this.context.Rooms.Where(x => x.Reservation == null && x.IsAvailable).Select(x => new SelectListRoomViewModel()
+            {
+                Id = x.Id,
+                Capacity = x.Capacity,
+                RoomType = x.Type,
+                PricePerAdultBed = x.PricePerAdultBed,
+                PricePerChildBed = x.PricePerChildBed,
+                Number = x.Number,
+            })
+                .ToListAsync();
+            return SelectList;
+        }
+        public async Task<List<SelectListRoomViewModel>> GetAllRoomsSelectListAsync(EditReservationViewModel model)
+        {
+            List<SelectListRoomViewModel> SelectList = await GetFreeRoomsSelectListAsync();
+            Room room = await context.Rooms.FirstOrDefaultAsync(x => x.Id == model.RoomId);
+            SelectListRoomViewModel rsvm = new SelectListRoomViewModel()
+            {
+                Id = room.Id,
+                Capacity = room.Capacity,
+                RoomType = room.Type,
+                Number = room.Number,
+                PricePerAdultBed = room.PricePerAdultBed,
+                PricePerChildBed = room.PricePerChildBed,
+            };
+            SelectList.Add(rsvm);
+            return SelectList;
+        }
+        private async Task RemoveClientReservationAsync(Client dbClient, Reservation res)
+        {
+            var existingReservation = context.Reservations.Local.SingleOrDefault(o => o.Id == res.Id);
+            if (existingReservation != null)
+                context.Entry(existingReservation).State = EntityState.Modified;
+
+            dbClient.Reservation = null;
+
+            context.Update(dbClient);
             await context.SaveChangesAsync();
         }
-        private double CalculatePrice(DateTime leaveDate, DateTime accomdate, Room room,
-   Client client)
+        private async Task AddClientToReservationAsync(Client dbClient,
+            Reservation reservation)
         {
-            double count = (leaveDate - accomdate).TotalDays;
+            dbClient.Reservation = reservation;
 
-            double price = 0;
-
-            Client clientType = context.Clients.Find(client.Id);
-            if (clientType.IsAdult)
+            ClientHistory ch = new ClientHistory()
             {
-                price += room.PricePerAdultBed * count;
+                Client = dbClient,
+                AccomodationDate = reservation.AccommodationDate,
+                LeaveDate = reservation.LeaveDate,
+                ResPrice = reservation.Price,
+                ResRoomNumber = reservation.Room.Number,
+            };
+
+            context.ClientHistories.Add(ch);
+
+            context.Reservations.Attach(reservation);
+            await this.context.SaveChangesAsync();
+        }
+        public async Task<int> GetRoomCapacityAsync(string id)
+        {
+            Room room = await context.Rooms.FindAsync(id);
+            return room.Capacity;
+        }
+        public async Task<Client> FindClientAsync(Client cust)
+        {
+            Client Client = await context.Clients.FirstOrDefaultAsync(x => x.FirstName == cust.FirstName &&
+x.LastName == cust.LastName && x.Number == cust.Number /*&& x.IsAdult == cust.IsAdult*/);
+            if (Client != null)
+            {
+                return Client;
             }
             else
             {
-                price += room.PricePerChildBed * count;
+                return null;
             }
-            return price;
         }
-        private double CalculatePriceWithExtra(Boolean HasBreakfast, Boolean HasAllInclusive)
+        private double CalculatePriceWithExtras(Boolean HasBreakfast, Boolean HasAllInclusive)
         {
-            double price = 0;
+            double price = new double();
             if (HasBreakfast)
             {
-                price += 135;
+                price += 150;
             }
             if (HasAllInclusive)
             {
-                price += 280;
+                price += 300;
+            }
+            return price;
+        }
+        private double CalculatePrice(DateTime leaveDate, DateTime accomdate, Room room,
+    Client cust)
+        {
+
+            TimeSpan duration = leaveDate - accomdate;
+            if (leaveDate == accomdate)
+            {
+                duration = TimeSpan.FromDays(1);
+            }
+            double price = new double();
+
+            Client dbc = context.Clients.Find(cust.Id);
+            if (dbc.IsAdult)
+            {
+                price += room.PricePerAdultBed * (double)duration.TotalDays;
+            }
+            if (!dbc.IsAdult)
+            {
+                price += room.PricePerChildBed * (double)duration.TotalDays;
             }
             return price;
         }
@@ -197,32 +426,7 @@ namespace HotelReservations.Services
             }
             return false;
         }
-        public async Task<int> GetRoomCapacityAsync(string id)
-        {
-            Room room = await context.Rooms.FindAsync(id);
-            return room.Capacity;
-        }
-        public async Task<Client> FindClientAsync(Client clnt)
-        {
-            Client client = await context.Clients.FirstOrDefaultAsync(x => x.FirstName == clnt.FirstName &&
-x.LastName == clnt.LastName && x.Number == clnt.Number);
-            if (client != null)
-            {
-                return client;
-            }
-            else
-            {
-                return null;
-            }
-        }
-        private static void ReserveRoom(Room room, Reservation reservation)
-        {
-            room.IsAvailable = false;
-            if (reservation.Room != null)
-            {
-                reservation.Room.IsAvailable = true;
-            }
-            reservation.RoomId = room.Id;
-        }
+
+
     }
 }

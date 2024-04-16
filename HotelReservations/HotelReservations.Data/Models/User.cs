@@ -11,6 +11,7 @@ namespace HotelReservations.Data.Models
         public DateTime HireDate { get; set; }
         public bool Status { get; set; }
         public DateTime? QuitDate { get; set; }
+
     }
 }
     

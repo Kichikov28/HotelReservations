@@ -12,12 +12,13 @@ namespace HotelReservations.ViewModels.Reservations
 {
     public class CreateReservationViewModel
     {
-        public string? UserId { get; set; }
-        public ICollection<Client> Clients { get; set; } =
-            new List<Client>();
+        public string UserId { get; set; }
+        public int RoomCapacity { get; set; }
+
         [Required(ErrorMessage = "Please select and submit a room")]
         public string RoomId { get; set; }
         public SelectList? Rooms { get; set; }
+        public IList<Client> Clients { get; set; } = new List<Client>();
 
         [Required]
         [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}", ApplyFormatInEditMode = true)]

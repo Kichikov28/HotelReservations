@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelReservations.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240412115432_ChangeReservationModel")]
-    partial class ChangeReservationModel
+    [Migration("20240416142544_ChangeDbContext")]
+    partial class ChangeDbContext
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,7 +34,6 @@ namespace HotelReservations.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
@@ -53,6 +52,7 @@ namespace HotelReservations.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ReservationId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -60,6 +60,34 @@ namespace HotelReservations.Data.Migrations
                     b.HasIndex("ReservationId");
 
                     b.ToTable("Clients");
+                });
+
+            modelBuilder.Entity("HotelReservations.Data.Models.ClientHistory", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("AccomodationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("LeaveDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("ResPrice")
+                        .HasColumnType("money");
+
+                    b.Property<int>("ResRoomNumber")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.ToTable("ClientHistories");
                 });
 
             modelBuilder.Entity("HotelReservations.Data.Models.Reservation", b =>
@@ -118,6 +146,7 @@ namespace HotelReservations.Data.Migrations
                         .HasColumnType("float");
 
                     b.Property<string>("ReservationId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Type")
@@ -126,8 +155,7 @@ namespace HotelReservations.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ReservationId")
-                        .IsUnique()
-                        .HasFilter("[ReservationId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Rooms");
                 });
@@ -363,9 +391,22 @@ namespace HotelReservations.Data.Migrations
                 {
                     b.HasOne("HotelReservations.Data.Models.Reservation", "Reservation")
                         .WithMany("Clients")
-                        .HasForeignKey("ReservationId");
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Reservation");
+                });
+
+            modelBuilder.Entity("HotelReservations.Data.Models.ClientHistory", b =>
+                {
+                    b.HasOne("HotelReservations.Data.Models.Client", "Client")
+                        .WithMany("ClientHistories")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
                 });
 
             modelBuilder.Entity("HotelReservations.Data.Models.Reservation", b =>
@@ -383,7 +424,9 @@ namespace HotelReservations.Data.Migrations
                 {
                     b.HasOne("HotelReservations.Data.Models.Reservation", "Reservation")
                         .WithOne("Room")
-                        .HasForeignKey("HotelReservations.Data.Models.Room", "ReservationId");
+                        .HasForeignKey("HotelReservations.Data.Models.Room", "ReservationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Reservation");
                 });
@@ -437,6 +480,11 @@ namespace HotelReservations.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("HotelReservations.Data.Models.Client", b =>
+                {
+                    b.Navigation("ClientHistories");
                 });
 
             modelBuilder.Entity("HotelReservations.Data.Models.Reservation", b =>

@@ -14,5 +14,7 @@ namespace HotelReservations.Services.Contracts
         public Task<RoomDetailsViewModel> GetRoomDetailsAsync(string id);
         public Task<EditRoomViewModel> EditRoomAsync(string id);
         public Task<string> UpdateRoomAsync(EditRoomViewModel model);
+        public Task<RoomDetailsViewModel> DeleteRoomByIdAsync(string id);
+        public Task DeleteConfirmRoomAsync(RoomDetailsViewModel model);
     }
 }

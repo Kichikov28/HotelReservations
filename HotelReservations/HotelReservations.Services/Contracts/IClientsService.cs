@@ -15,6 +15,9 @@ namespace HotelReservations.Services.Contracts
         public Task UpdateCustomerAsync(ClientEditViewModel model);
         public Task<ClientDetailsViewModel> GetClientDetailsByIdAsync(string id);
         public List<ClientHistoryViewModel> GetClientReservationHistory(string id);
+        public  Task<ClientDetailsViewModel> DeleteClientByIdAsync(string id);
+        public Task DeleteConfirmCustomerAsync(ClientDetailsViewModel model);
 
-	}
+
+    }
 }

@@ -1,6 +1,8 @@
 ﻿namespace HotelReservations.Data.Models
 {
     using HotelReservations.Data.Models.Enums;
+    using System.ComponentModel.DataAnnotations.Schema;
+
     public class Room
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
@@ -10,7 +12,8 @@
         public bool IsAvailable { get; set; }
         public double PricePerAdultBed { get; set; }
         public double PricePerChildBed { get; set; }
-        public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();   
-
+        public string? ReservationId { get; set; }
+        [ForeignKey("ReservationId")]
+        public virtual Reservation Reservation { get; set; }
     }
 }

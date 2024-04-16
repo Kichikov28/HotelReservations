@@ -109,35 +109,17 @@ namespace HotelReservations.Web.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(string id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var room = await _context.Rooms
-              //  .Include(r => r.Reservation)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (room == null)
-            {
-                return NotFound();
-            }
-
-            return View(room);
+            RoomDetailsViewModel model = await service.DeleteRoomByIdAsync(id);
+            return View(model);
         }
 
         // POST: Rooms/Delete/5
         [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public async Task<IActionResult> DeleteConfirmed(RoomDetailsViewModel model)
         {
-            var room = await _context.Rooms.FindAsync(id);
-            if (room != null)
-            {
-                _context.Rooms.Remove(room);
-            }
-
-            await _context.SaveChangesAsync();
+            await service.DeleteConfirmRoomAsync(model);
             return RedirectToAction(nameof(Index));
         }
 

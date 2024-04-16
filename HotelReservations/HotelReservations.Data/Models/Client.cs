@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,10 @@ namespace HotelReservations.Data.Models
         public string Number { get; set; }
         public string? Email { get; set; }
         public bool IsAdult { get; set; }
-        public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+        public string? ReservationId { get; set; }
+        [ForeignKey("ReservationId")]
+        public virtual Reservation Reservation { get; set; }
+        public virtual ICollection<ClientHistory> ClientHistories { get; set; } = new List<ClientHistory>();
 
     }
 }

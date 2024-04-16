@@ -5,37 +5,26 @@
 namespace HotelReservations.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class ChangeRoomModel : Migration
+    public partial class ChangeModel : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Rooms_Reservations_ReservationId",
-                table: "Rooms");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Rooms_ReservationId",
-                table: "Rooms");
+                name: "FK_Clients_Reservations_ReservationId",
+                table: "Clients");
 
             migrationBuilder.AlterColumn<string>(
                 name: "ReservationId",
-                table: "Rooms",
+                table: "Clients",
                 type: "nvarchar(450)",
                 nullable: true,
                 oldClrType: typeof(string),
                 oldType: "nvarchar(450)");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Rooms_ReservationId",
-                table: "Rooms",
-                column: "ReservationId",
-                unique: true,
-                filter: "[ReservationId] IS NOT NULL");
-
             migrationBuilder.AddForeignKey(
-                name: "FK_Rooms_Reservations_ReservationId",
-                table: "Rooms",
+                name: "FK_Clients_Reservations_ReservationId",
+                table: "Clients",
                 column: "ReservationId",
                 principalTable: "Reservations",
                 principalColumn: "Id");
@@ -45,16 +34,12 @@ namespace HotelReservations.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Rooms_Reservations_ReservationId",
-                table: "Rooms");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Rooms_ReservationId",
-                table: "Rooms");
+                name: "FK_Clients_Reservations_ReservationId",
+                table: "Clients");
 
             migrationBuilder.AlterColumn<string>(
                 name: "ReservationId",
-                table: "Rooms",
+                table: "Clients",
                 type: "nvarchar(450)",
                 nullable: false,
                 defaultValue: "",
@@ -62,15 +47,9 @@ namespace HotelReservations.Data.Migrations
                 oldType: "nvarchar(450)",
                 oldNullable: true);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Rooms_ReservationId",
-                table: "Rooms",
-                column: "ReservationId",
-                unique: true);
-
             migrationBuilder.AddForeignKey(
-                name: "FK_Rooms_Reservations_ReservationId",
-                table: "Rooms",
+                name: "FK_Clients_Reservations_ReservationId",
+                table: "Clients",
                 column: "ReservationId",
                 principalTable: "Reservations",
                 principalColumn: "Id",

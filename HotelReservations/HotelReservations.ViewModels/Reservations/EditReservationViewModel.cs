@@ -29,6 +29,6 @@ namespace HotelReservations.ViewModels.Reservations
         [DisplayName("Leave date")]
         public new DateTime LeaveDate { get; set; }
         public IList<Client> ClientsToAdd { get; set; } = new List<Client>();
-        public IList<ClientIndexViewModel> CustomersToRemove { get; set; } = new List<ClientIndexViewModel>();
+        public IList<ClientIndexViewModel> ClientsToRemove { get; set; } = new List<ClientIndexViewModel>();
     }
 }

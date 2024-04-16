@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HotelReservations.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class ModelsCreated : Migration
+    public partial class ChangeModels : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -195,7 +195,7 @@ namespace HotelReservations.Data.Migrations
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Number = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsAdult = table.Column<bool>(type: "bit", nullable: false),
                     ReservationId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
@@ -230,6 +230,28 @@ namespace HotelReservations.Data.Migrations
                         name: "FK_Rooms_Reservations_ReservationId",
                         column: x => x.ReservationId,
                         principalTable: "Reservations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ClientHistory",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ResRoomNumber = table.Column<int>(type: "int", nullable: false),
+                    AccomodationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LeaveDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ResPrice = table.Column<decimal>(type: "money", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ClientHistory", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ClientHistory_Clients_ClientId",
+                        column: x => x.ClientId,
+                        principalTable: "Clients",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -274,6 +296,11 @@ namespace HotelReservations.Data.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ClientHistory_ClientId",
+                table: "ClientHistory",
+                column: "ClientId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Clients_ReservationId",
                 table: "Clients",
                 column: "ReservationId");
@@ -309,13 +336,16 @@ namespace HotelReservations.Data.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Clients");
+                name: "ClientHistory");
 
             migrationBuilder.DropTable(
                 name: "Rooms");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Clients");
 
             migrationBuilder.DropTable(
                 name: "Reservations");

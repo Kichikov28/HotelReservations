@@ -132,5 +132,32 @@ namespace HotelReservations.Services
             await context.SaveChangesAsync();
             return room.Id;
         }
+        public async Task<RoomDetailsViewModel> DeleteRoomByIdAsync(string id)
+        {
+            Room room = await context.Rooms.FindAsync(id);
+            if (room != null)
+            {
+                return new RoomDetailsViewModel()
+                {
+                    Capacity = room.Capacity,
+                    Id = room.Id,
+                    IsAvailable = room.IsAvailable,
+                    Number = room.Number,
+                    PricePerAdultBed = room.PricePerAdultBed,
+                    PricePerChildBed = room.PricePerChildBed,
+                    RoomType = room.Type,
+                };
+            }
+            return null;
+        }
+        public async Task DeleteConfirmRoomAsync(RoomDetailsViewModel model)
+        {
+            Room room = await context.Rooms.FindAsync(model.Id);
+            if (room != null)
+            {
+                context.Rooms.Remove(room);
+                await context.SaveChangesAsync();
+            }
+        }
     }
 }

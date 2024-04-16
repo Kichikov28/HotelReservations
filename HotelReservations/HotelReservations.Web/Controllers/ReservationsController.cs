@@ -12,18 +12,21 @@ using HotelReservations.Services.Contracts;
 using HotelReservations.Services;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using HotelReservations.ViewModels.Shared;
+using Castle.Core.Resource;
 
 namespace HotelReservations.Web.Controllers
 {
     [Authorize(Roles = "Admin,User")]
     public class ReservationsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext context;
         private readonly IReservationsService service;
 
-        public ReservationsController(IReservationsService service)
+        public ReservationsController(IReservationsService service, ApplicationDbContext context)
         {
             this.service = service;
+            this.context = context;
         }
 
         // GET: Reservations
@@ -36,45 +39,95 @@ namespace HotelReservations.Web.Controllers
         // GET: Reservations/Details/5
         public async Task<IActionResult> Details(string id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
 
-            var reservation = await _context.Reservations
-                .Include(r => r.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (reservation == null)
-            {
-                return NotFound();
-            }
-
-            return View(reservation);
-        }
-
-        // GET: Reservations/Create
-        public async Task<IActionResult> Create()
-        {
-            CreateReservationViewModel model = new CreateReservationViewModel();
-            model.Rooms = await service.GetFreeRooms();
+            DetailsReservationViewModel model = await service.GetReservationDetailsAsync(id);
+            //if (service.HasReservationPassed(model.LeaveDate))
+            //{
+            //    await service.DeleteReservationAsync(await service.GetReservationToDeleteAsync(id));
+            //    return RedirectToAction("Error", "Home", new ErrorViewModel()
+            //    { ErrorMessage = "Reservation has already passed and will be deleted" });
+            //}
             return View(model);
         }
 
-        // POST: Reservations/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // GET: Reservations/Create
+        public async Task<IActionResult> Create(string roomId)
+        {
+            CreateReservationViewModel model = new CreateReservationViewModel();
+            await ConfigureCreateVM(model, roomId);
+            if (!model.Rooms.Any())
+            {
+                return RedirectToAction("Error", "Home", new ErrorViewModel() { ErrorMessage = "No free rooms at his time" });
+            }
+            return View(model);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateReservationViewModel model)
         {
+            //Gets current user's id
             model.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            ModelState.MarkFieldValid("Clients");
-            if (ModelState.IsValid)
+
+            //Remove temporary empty Client objects
+            model.Clients = model.Clients.Where(x => x.FirstName != null && x.LastName != null && x.Number != null).ToList();
+
+            // Check if user submitted a roomid
+            if (model.RoomId == null)
             {
+                ModelState.AddModelError(nameof(model.RoomId), "Please select and submit a room");
+                await ConfigureCreateVM(model, model.RoomId);
+                return View(model);
+            }
+            //Checks Accommodation and Leave date if they are sensible
+            if (CheckDurationOfDates(model.LeaveDate, model.AccommodationDate))
+            {
+                ModelState.AddModelError(nameof(model.LeaveDate), "Leave date can't be before Accommodation Date");
+                ModelState.AddModelError(nameof(model.AccommodationDate), "Accommodation Date can't be after Leave Date");
+                await ConfigureCreateVM(model, model.RoomId);
+                return View(model);
+            }
+            //Check if nubmer of people is more than room capacity
+            if (await service.GetRoomCapacityAsync(model.RoomId) < model.Clients.Count)
+            {
+                ModelState.AddModelError(nameof(model.Clients), "Number of people exceeds Room Capacity");
+                await ConfigureCreateVM(model, model.RoomId);
+                return View(model);
+            }
+            //check if user inputed at least 1 Client
+            if (!model.Clients.Any())
+            {
+                ModelState.AddModelError(nameof(model.Clients), "Add at least 1 person");
+                await ConfigureCreateVM(model, model.RoomId);
+                return View(model);
+            }
+            List<Client> inputClients = model.Clients.Select(x => new Client()
+            {
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+                Number = x.Number,
+            }).ToList();
+            //chek every inputted User if he exists in database and if he already has a reservation
+            foreach (var cust in inputClients)
+            {
+                Client Client = await service.FindClientAsync(cust);
+                if (Client == null)
+                {
+                    ModelState.AddModelError(nameof(model.Clients), $"{cust.FirstName} {cust.LastName} isn't found in the database. You have to first add him/her");
+                    await ConfigureCreateVM(model, model.RoomId);
+                    return View(model);
+                }
+                if (Client.Reservation != null)
+                {
+                    ModelState.AddModelError(nameof(model.Clients), $"{cust.FirstName} {cust.LastName} has already been asigned to a Reservation");
+                    await ConfigureCreateVM(model, model.RoomId);
+                    return View(model);
+                }
+            }
+            ModelState.MarkFieldValid("Reservations");
                 await service.CreateReservationAsync(model);
                 return RedirectToAction(nameof(Index));
-            }
-            model.Rooms = await service.GetFreeRooms();
+            await ConfigureCreateVM(model, model.RoomId);
             return View(model);
         }
 
@@ -86,12 +139,12 @@ namespace HotelReservations.Web.Controllers
                 return NotFound();
             }
 
-            var reservation = await _context.Reservations.FindAsync(id);
+            var reservation = await context.Reservations.FindAsync(id);
             if (reservation == null)
             {
                 return NotFound();
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", reservation.UserId);
+            ViewData["UserId"] = new SelectList(context.Users, "Id", "Id", reservation.UserId);
             return View(reservation);
         }
 
@@ -111,8 +164,8 @@ namespace HotelReservations.Web.Controllers
             {
                 try
                 {
-                    _context.Update(reservation);
-                    await _context.SaveChangesAsync();
+                    context.Update(reservation);
+                    await context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -127,7 +180,7 @@ namespace HotelReservations.Web.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", reservation.UserId);
+            ViewData["UserId"] = new SelectList(context.Users, "Id", "Id", reservation.UserId);
             return View(reservation);
         }
 
@@ -139,7 +192,7 @@ namespace HotelReservations.Web.Controllers
                 return NotFound();
             }
 
-            var reservation = await _context.Reservations
+            var reservation = await context.Reservations
                 .Include(r => r.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (reservation == null)
@@ -155,19 +208,36 @@ namespace HotelReservations.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var reservation = await _context.Reservations.FindAsync(id);
+            var reservation = await context.Reservations.FindAsync(id);
             if (reservation != null)
             {
-                _context.Reservations.Remove(reservation);
+                context.Reservations.Remove(reservation);
             }
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ReservationExists(string id)
         {
-            return _context.Reservations.Any(e => e.Id == id);
+            return context.Reservations.Any(x => x.Id == id);
+        }
+        private async Task ConfigureCreateVM(CreateReservationViewModel model, string roomId)
+        {
+            model.Rooms = new SelectList(await service.GetFreeRoomsSelectListAsync(), "Id", "Number");
+            if (!string.IsNullOrWhiteSpace(roomId) && await service.GetRoomCapacityAsync(roomId) > 0)
+            {
+                model.RoomId = roomId;
+                model.RoomCapacity = await service.GetRoomCapacityAsync(roomId);
+            }
+            for (int i = 0; i < model.RoomCapacity; i++)
+            {
+                model.Clients.Add(new Client());
+            }
+        }
+        private static bool CheckDurationOfDates(DateTime LeaveDate, DateTime AccommodationDate)
+        {
+            return LeaveDate < AccommodationDate;
         }
     }
 }

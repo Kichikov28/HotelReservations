@@ -11,17 +11,17 @@ namespace HotelReservations.Data
         public virtual DbSet<Client> Clients { get; set; }
         public virtual DbSet<Room> Rooms { get; set; }
         public virtual DbSet<Reservation> Reservations { get; set; }
+        public virtual DbSet<ClientHistory> ClientHistories { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
         public ApplicationDbContext()
         {
-                
+
         }
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            
             base.OnModelCreating(builder);  
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -30,6 +30,7 @@ namespace HotelReservations.Data
             {
                 optionsBuilder.UseSqlServer();
             }
+            optionsBuilder.UseLazyLoadingProxies();
         }
     }
 

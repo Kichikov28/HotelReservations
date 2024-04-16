@@ -45,28 +45,27 @@ namespace HotelReservations.Web.Controllers
         }
         public async Task<IActionResult> Seed()
         {
-            List<string> firstName = new List<string>() { "John", "Alex","Ati","Djemal","Toni", "Jane", "Jack", "Michael", "William" };
-            List<string> lastName = new List<string>() { "Johnson", "Alexandrov","Gagov","Djivgova","Kichikov", "Brown", "Martinez" };
+            List<string> firstName = new List<string>() { "John", "Ati", "Djemal", "Toni", "Jane","Salihe","Kris","Lusy" };
+            List<string> lastName = new List<string>() { "Johnson", "Gagov", "Djivgova", "Kichikov", "Milenov", "Bodeva" };
             Random random = new Random();
-            var x = random.Next(100000000, 999999999);
             Boolean isAdult = false;
             for (int i = 0; i < firstName.Count; i++)
             {
-                if (firstName[i].Length>3)
+                if (firstName[i].Length > 3)
                 {
                     isAdult = true;
                 }
             }
-            for (int i = 1; i <= 50; i++)
+            for (int i = 1; i <= 20; i++)
             {
                 string result = await service.CreateClientAsync(
 
                       new ClientCreateViewModel()
                       {
-                          FirstName = $"{firstName[random.Next(0,firstName.Count)]}",
+                          FirstName = $"{firstName[random.Next(0, firstName.Count)]}",
                           LastName = $"{lastName[random.Next(0, lastName.Count)]}",
-                          PhoneNumber = x.ToString("D10"),
-                          IsAdult=isAdult,
+                          PhoneNumber = random.Next(087000000, 089999999).ToString("D10"),
+                          IsAdult = isAdult,
                           Email = $"client{i}@app.bg"
                       }
                       );
@@ -119,34 +118,16 @@ namespace HotelReservations.Web.Controllers
         // GET: Clients/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var client = await _context.Clients
-               // .Include(c => c.Reservation)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (client == null)
-            {
-                return NotFound();
-            }
-
-            return View(client);
+            ClientDetailsViewModel model = await service.DeleteClientByIdAsync(id);
+            return View(model);
         }
 
         // POST: Clients/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public async Task<IActionResult> DeleteConfirmed(ClientDetailsViewModel model)
         {
-            var client = await _context.Clients.FindAsync(id);
-            if (client != null)
-            {
-                _context.Clients.Remove(client);
-            }
-
-            await _context.SaveChangesAsync();
+            await service.DeleteConfirmCustomerAsync(model);
             return RedirectToAction(nameof(Index));
         }
 
