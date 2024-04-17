@@ -19,5 +19,8 @@ namespace HotelReservations.Services.Contracts
         public Task<int> GetRoomCapacityAsync(string id);
         public Task<Client> FindClientAsync(Client clnt);
         public Task<DetailsReservationViewModel> GetReservationDetailsAsync(string id);
+        public Task<DetailsReservationViewModel> GetReservationToDeleteAsync(string id);
+        public Task DeleteReservationAsync(DetailsReservationViewModel model);
+        public bool HasReservationPassed(DateTime LeaveDate);
     }
 }

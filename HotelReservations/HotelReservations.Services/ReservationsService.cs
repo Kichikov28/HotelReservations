@@ -143,8 +143,8 @@ namespace HotelReservations.Services
                     RoomId = reservation.RoomId,
                     AccommodationDate = reservation.AccommodationDate,
                     LeaveDate = reservation.LeaveDate,
-                   // HasAllInclusive = reservation.HasAllInclusive,
-                   // HasBreakfast = reservation.HasBreakfast,
+                    // HasAllInclusive = reservation.HasAllInclusive,
+                    // HasBreakfast = reservation.HasBreakfast,
                 };
                 model.ClientsToRemove = reservation.Clients.Select(x => new ClientIndexViewModel()
                 {
@@ -157,11 +157,11 @@ namespace HotelReservations.Services
                 }).ToList();
 
                 SelectList selectList = new SelectList(await GetAllRoomsSelectListAsync(model), "Id", "Number");
-              //  model.Rooms = selectList;
+                //  model.Rooms = selectList;
 
                 if (!String.IsNullOrEmpty(model.RoomId) && await GetRoomCapacityAsync(model.RoomId) > 0)
                 {
-                  //  model.SelectedRoomCap = await GetRoomCapacityAsync(model.RoomId);
+                    //  model.SelectedRoomCap = await GetRoomCapacityAsync(model.RoomId);
 
                     //for (int i = 0; i < model.SelectedRoomCap - reservation.Clients.Count; i++)
                     //{
@@ -258,7 +258,7 @@ namespace HotelReservations.Services
                     Price = reservation.Price,
                 };
 
-                //Get Clients for Current Reservation
+
                 model.Clients = await context.Clients
                     .Where(x => x.ReservationId == model.Id)
                     .Select(x => new ClientIndexViewModel()
@@ -280,9 +280,9 @@ namespace HotelReservations.Services
             Reservation r = await this.context.Reservations.FindAsync(model.Id);
             if (r != null)
             {
-                foreach (var cust in r.Clients)
+                foreach (var client in r.Clients)
                 {
-                    cust.Reservation = null;
+                    client.Reservation = null;
                 }
 
                 if (r.Room != null)

@@ -36,21 +36,6 @@ namespace HotelReservations.Web.Controllers
             return View(model);
         }
 
-        // GET: Reservations/Details/5
-        public async Task<IActionResult> Details(string id)
-        {
-
-            DetailsReservationViewModel model = await service.GetReservationDetailsAsync(id);
-            //if (service.HasReservationPassed(model.LeaveDate))
-            //{
-            //    await service.DeleteReservationAsync(await service.GetReservationToDeleteAsync(id));
-            //    return RedirectToAction("Error", "Home", new ErrorViewModel()
-            //    { ErrorMessage = "Reservation has already passed and will be deleted" });
-            //}
-            return View(model);
-        }
-
-        // GET: Reservations/Create
         public async Task<IActionResult> Create(string roomId)
         {
             CreateReservationViewModel model = new CreateReservationViewModel();
@@ -125,12 +110,16 @@ namespace HotelReservations.Web.Controllers
                 }
             }
             ModelState.MarkFieldValid("Reservations");
-                await service.CreateReservationAsync(model);
-                return RedirectToAction(nameof(Index));
-            await ConfigureCreateVM(model, model.RoomId);
-            return View(model);
+            await service.CreateReservationAsync(model);
+            return RedirectToAction(nameof(Index));
         }
 
+        public async Task<IActionResult> Details(string id)
+        {
+            DetailsReservationViewModel model = await service.GetReservationDetailsAsync(id);
+            await service.DeleteReservationAsync(await service.GetReservationToDeleteAsync(id));
+            return View(model);
+        }
         // GET: Reservations/Edit/5
         public async Task<IActionResult> Edit(string id)
         {
@@ -187,34 +176,16 @@ namespace HotelReservations.Web.Controllers
         // GET: Reservations/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var reservation = await context.Reservations
-                .Include(r => r.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (reservation == null)
-            {
-                return NotFound();
-            }
-
-            return View(reservation);
+            DetailsReservationViewModel model = await service.GetReservationToDeleteAsync(id);
+            return View(model);
         }
 
         // POST: Reservations/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public async Task<IActionResult> DeleteConfirmed(DetailsReservationViewModel model)
         {
-            var reservation = await context.Reservations.FindAsync(id);
-            if (reservation != null)
-            {
-                context.Reservations.Remove(reservation);
-            }
-
-            await context.SaveChangesAsync();
+            await service.DeleteReservationAsync(model);
             return RedirectToAction(nameof(Index));
         }
 

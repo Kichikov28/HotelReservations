@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,6 +33,7 @@ namespace HotelReservations.ViewModels.Reservations
         public bool HasAllInclusive { get; set; }
 
         [Display(Name = "Total price")]
+        [DataType(DataType.Currency)]
         public double Price { get; set; }
     }
 }

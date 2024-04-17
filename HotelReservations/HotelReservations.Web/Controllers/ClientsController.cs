@@ -127,7 +127,7 @@ namespace HotelReservations.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(ClientDetailsViewModel model)
         {
-            await service.DeleteConfirmCustomerAsync(model);
+            await service.DeleteClientAsync(model);
             return RedirectToAction(nameof(Index));
         }
 

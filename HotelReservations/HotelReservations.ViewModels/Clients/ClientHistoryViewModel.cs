@@ -12,9 +12,10 @@ namespace HotelReservations.ViewModels.Clients
 {
     public class ClientHistoryViewModel
     {
-        public int ResRoomNumber { get; set; }
-        public string RoomId { get; set; }
-        public Room Room { get; set; }
+        public string ClientId { get; set; }
+        public Client Client { get; set; }
+        public int RoomNumber { get; set; }
+
         [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}", ApplyFormatInEditMode = true)]
         [DataType(DataType.Date)]
         [DisplayName("Accomodation date")]
@@ -23,8 +24,6 @@ namespace HotelReservations.ViewModels.Clients
         [DataType(DataType.Date)]
         [DisplayName("Leave date")]
         public DateTime LeaveDate { get; set; }
-        public string ReservationId { get; set; }
-        public Reservation Reservation { get; set; }
 
         [Display(Name = "Total price")]
         [DataType(DataType.Currency)]

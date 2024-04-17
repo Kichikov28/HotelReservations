@@ -42,8 +42,9 @@
         </dd>
     </dl>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a>
+<div class="form-group">
+    <a asp-action="Edit" asp-route-id="@Model.Id"><i class="btn btn-info"></i></a>
+    <a asp-action="Delete" asp-route-id="@Model.Id"><i class="btn btn-danger"></i></a>
 </div>
 @if (Model.Clients.Any())
 {

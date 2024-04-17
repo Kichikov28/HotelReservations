@@ -79,27 +79,22 @@ namespace HotelReservations.Services
 					IsAdult = client.IsAdult,
 					PhoneNumber = client.Number,
 				};
+                model.History = await context.ClientHistories
+                  .Where(x => x.ClientId == client.Id)
+                  .Select(x => new ClientHistoryViewModel()
+                  {
+                      ClientId = x.ClientId,
+                      Price = x.ResPrice,
+                      Client = x.Client,
+                      AccomodationDate = x.AccomodationDate,
+                      LeaveDate = x.LeaveDate,
+                      RoomNumber = x.ResRoomNumber,
+                  })
+                   .ToListAsync();
 
-				return model;
+                return model;
 			}
 			return null;
-		}
-		public List<ClientHistoryViewModel> GetClientReservationHistory(string id)
-		{
-			var clientReservations = context.Reservations
-				   //.Where(r => r.Clients.Any(c => c.Id == id))
-				   .Select(r => new ClientHistoryViewModel
-				   {
-					   ReservationId = r.Id,
-					   RoomId = r.RoomId,
-					   ResRoomNumber = r.Room.Number,
-					   AccomodationDate = r.AccommodationDate,
-					   LeaveDate = r.LeaveDate,
-					   Price = r.Price
-				   })
-				   .ToList();
-
-			return clientReservations;
 		}
 		public async Task<ClientEditViewModel> EditCustomerByIdAsync(string id)
 		{
@@ -150,7 +145,7 @@ namespace HotelReservations.Services
             }
             return null;
         }
-        public async Task DeleteConfirmCustomerAsync(ClientDetailsViewModel model)
+        public async Task DeleteClientAsync(ClientDetailsViewModel model)
         {
 			Client client = await context.Clients.FindAsync(model.Id);
 			if (client != null)
