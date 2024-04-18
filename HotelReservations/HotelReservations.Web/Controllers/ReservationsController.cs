@@ -1,22 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using HotelReservations.Data;
-using HotelReservations.Data.Models;
-using HotelReservations.ViewModels.Reservations;
-using HotelReservations.Services.Contracts;
-using HotelReservations.Services;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using HotelReservations.ViewModels.Shared;
-using Castle.Core.Resource;
-
-namespace HotelReservations.Web.Controllers
+﻿namespace HotelReservations.Web.Controllers
 {
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.Rendering;
+    using HotelReservations.Data;
+    using HotelReservations.Data.Models;
+    using HotelReservations.ViewModels.Reservations;
+    using HotelReservations.Services.Contracts;
+    using System.Security.Claims;
+    using Microsoft.AspNetCore.Authorization;
+    using HotelReservations.ViewModels.Shared;
     [Authorize(Roles = "Admin,User")]
     public class ReservationsController : Controller
     {
@@ -117,24 +109,13 @@ namespace HotelReservations.Web.Controllers
         public async Task<IActionResult> Details(string id)
         {
             DetailsReservationViewModel model = await service.GetReservationDetailsAsync(id);
-            await service.DeleteReservationAsync(await service.GetReservationToDeleteAsync(id));
             return View(model);
         }
         // GET: Reservations/Edit/5
         public async Task<IActionResult> Edit(string id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var reservation = await context.Reservations.FindAsync(id);
-            if (reservation == null)
-            {
-                return NotFound();
-            }
-            ViewData["UserId"] = new SelectList(context.Users, "Id", "Id", reservation.UserId);
-            return View(reservation);
+            EditReservationViewModel model = await service.EditReservationByIdAsync(id);
+            return View(model);
         }
 
         // POST: Reservations/Edit/5
@@ -142,35 +123,57 @@ namespace HotelReservations.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Id,RoomId,UserId,AccommodationDate,LeaveDate,HasBreakfast,HasAllInclusive,Price")] Reservation reservation)
+        public async Task<IActionResult> Edit(EditReservationViewModel model)
         {
-            if (id != reservation.Id)
-            {
-                return NotFound();
-            }
+            model.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (ModelState.IsValid)
+            //Remove temporary empty Customer objects
+            model.ClientsToAdd = model.ClientsToAdd.Where(x => x.FirstName != null && x.LastName != null && x.Number != null).ToList();
+            model.ClientsToRemove = model.ClientsToRemove.Where(x => x.RemoveFromRes).ToList();
+
+            // Check if user submitted a roomid
+            if (model.RoomId == null)
             {
-                try
-                {
-                    context.Update(reservation);
-                    await context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ReservationExists(reservation.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError(nameof(model.RoomId), "Please select and submit a room");
+                return View(await service.EditReservationByIdAsync(model.Id));
             }
-            ViewData["UserId"] = new SelectList(context.Users, "Id", "Id", reservation.UserId);
-            return View(reservation);
+            //Checks Accommodation and Leave date if they are sensible
+            if (CheckDurationOfDates(model.LeaveDate, model.AccommodationDate))
+            {
+                ModelState.AddModelError(nameof(model.LeaveDate), "Leave date can't be before Accommodation Date");
+                ModelState.AddModelError(nameof(model.AccommodationDate), "Accommodation Date can't be after Leave Date");
+                return View(await service.EditReservationByIdAsync(model.Id));
+            }
+            //Check if nubmer of people is more than room capacity
+            if (await service.GetRoomCapacityAsync(model.RoomId) < model.ClientsToAdd.Count)
+            {
+                ModelState.AddModelError(nameof(model.ClientsToAdd), "Number of people exceeds Room Capacity");
+                return View(await service.EditReservationByIdAsync(model.Id));
+            }
+            List<Client> inputCustomers = model.ClientsToAdd.Select(x => new Client()
+            {
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+                Number = x.Number,
+            }).ToList();
+            //chek every inputted User if he exists in database and if he already has a reservation
+            foreach (var clnt in inputCustomers)
+            {
+                Client client = await service.FindClientAsync(clnt);
+                if (client == null)
+                {
+                    ModelState.AddModelError(nameof(model.ClientsToAdd), $"{clnt.FirstName} {clnt.LastName} isn't found in the database. You have to first add him/her");
+                    return View(await service.EditReservationByIdAsync(model.Id));
+                }
+                if (client.Reservation != null)
+                {
+                    ModelState.AddModelError(nameof(model.ClientsToAdd), $"{clnt.FirstName} {clnt.LastName} has already been asigned to a Reservation");
+                    return View(await service.EditReservationByIdAsync(model.Id));
+                }
+            }
+            await service.UpdateReservationAsync(model);
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Reservations/Delete/5

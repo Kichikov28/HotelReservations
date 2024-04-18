@@ -43,9 +43,8 @@
                     {
                         <div class="form-group">
                             <h4>
-                                Input existing client info:
+                                Client info:
                             </h4>
-                            <small>(leave blank if needed)</small>
                             <div class="justify-content-center" style="margin:10px 0px 10px 0px">
                                 <span asp-validation-for="Clients" class="text-danger text-center">
                                 </span>
@@ -106,9 +105,3 @@
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}

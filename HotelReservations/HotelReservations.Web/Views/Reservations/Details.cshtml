@@ -42,9 +42,9 @@
         </dd>
     </dl>
 </div>
-<div class="form-group">
-    <a asp-action="Edit" asp-route-id="@Model.Id"><i class="btn btn-info"></i></a>
-    <a asp-action="Delete" asp-route-id="@Model.Id"><i class="btn btn-danger"></i></a>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-secondary">Edit</a> |
+    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Delete</a>
 </div>
 @if (Model.Clients.Any())
 {
@@ -72,9 +72,6 @@
                         <td>
                             @Html.DisplayFor(modelItem => item.PhoneNumber)
                         </td>
-                        <td>
-                            <a asp-controller="Clients" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i></a>
-                        </td>
                     </tr>
                 }
             </tbody>
@@ -82,5 +79,5 @@
     </div>
 }
 
-<div> <a asp-action="Index">Back to List</a></div>
+<div> <a asp-action="Index" class="btn btn-info">Back to List</a></div>
 

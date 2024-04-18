@@ -1,30 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using HotelReservations.Data;
-using HotelReservations.Data.Models;
-using HotelReservations.ViewModels.Clients;
-using HotelReservations.Services.Contracts;
-using HotelReservations.ViewModels.Users;
-using Castle.Core.Resource;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
-using Microsoft.AspNetCore.Authorization;
-
-namespace HotelReservations.Web.Controllers
+﻿namespace HotelReservations.Web.Controllers
 {
+    using Microsoft.AspNetCore.Mvc;
+    using HotelReservations.Data;
+    using HotelReservations.ViewModels.Clients;
+    using HotelReservations.Services.Contracts;
+    using Microsoft.AspNetCore.Authorization;
+
     [Authorize(Roles = "Admin,User")]
     public class ClientsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext context;
         private readonly IClientsService service;
 
         public ClientsController(ApplicationDbContext context, IClientsService service)
         {
-            _context = context;
+            this.context = context;
             this.service = service;
         }
 
@@ -45,8 +35,8 @@ namespace HotelReservations.Web.Controllers
         }
         public async Task<IActionResult> Seed()
         {
-            List<string> firstName = new List<string>() { "John", "Ati", "Djemal", "Toni", "Jane","Salihe","Kris","Lusy" };
-            List<string> lastName = new List<string>() { "Johnson", "Gagov", "Djivgova", "Kichikov", "Milenov", "Bodeva" };
+            List<string> firstName = new List<string>() { "John", "William", "Sara", "Tony", "Jane","Carl","Ben","Lusy" };
+            List<string> lastName = new List<string>() { "Johnson", "Phillips", "Benet", "Howard", "Willies", "Perry" };
             Random random = new Random();
             Boolean isAdult = false;
             for (int i = 0; i < firstName.Count; i++)
@@ -64,9 +54,9 @@ namespace HotelReservations.Web.Controllers
                       {
                           FirstName = $"{firstName[random.Next(0, firstName.Count)]}",
                           LastName = $"{lastName[random.Next(0, lastName.Count)]}",
-                          PhoneNumber = random.Next(087000000, 089999999).ToString("D10"),
+                          PhoneNumber = random.Next(0870000000, 0899999999).ToString("D10"),
                           IsAdult = isAdult,
-                          Email = $"client{i}@app.bg"
+                          Email = $"client{i}@gmail.com"
                       }
                       );
             }
@@ -133,7 +123,7 @@ namespace HotelReservations.Web.Controllers
 
         private bool ClientExists(string id)
         {
-            return _context.Clients.Any(e => e.Id == id);
+            return context.Clients.Any(e => e.Id == id);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Castle.Core.Resource;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,7 @@ namespace HotelReservations.Data.Models
         public DateTime LeaveDate { get; set; }
 
         [Column(TypeName = "money")]
+        [DataType(DataType.Currency)]
         public double ResPrice { get; set; }
     }
 }

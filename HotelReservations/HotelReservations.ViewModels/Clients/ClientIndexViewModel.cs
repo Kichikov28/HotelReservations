@@ -20,5 +20,6 @@ namespace HotelReservations.ViewModels.Clients
         public string Email { get; set; }
         [Display(Name = "Adult")]
         public bool IsAdult { get; set; }
+        public bool RemoveFromRes { get; set; } = false;
     }
 }

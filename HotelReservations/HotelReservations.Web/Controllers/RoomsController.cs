@@ -1,21 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using HotelReservations.Data;
-using HotelReservations.Data.Models;
-using HotelReservations.ViewModels.Rooms;
-using HotelReservations.Services;
-using HotelReservations.Services.Contracts;
-using HotelReservations.ViewModels.Clients;
-using HotelReservations.Data.Models.Enums;
-using Microsoft.AspNetCore.Authorization;
-
-namespace HotelReservations.Web.Controllers
+﻿namespace HotelReservations.Web.Controllers
 {
+    using Microsoft.AspNetCore.Mvc;
+    using HotelReservations.Data;
+    using HotelReservations.ViewModels.Rooms;
+    using HotelReservations.Services.Contracts;
+    using HotelReservations.Data.Models.Enums;
+    using Microsoft.AspNetCore.Authorization;
+
     [Authorize(Roles = "Admin,User")]
     public class RoomsController : Controller
     {

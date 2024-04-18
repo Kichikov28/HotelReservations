@@ -1,15 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
-using HotelReservations.Common;
-using HotelReservations.Services.Contracts;
-using HotelReservations.ViewModels.Users;
-using System.Security.Claims;
-using HotelReservations.Services;
-
-namespace HotelReservations.Web.Controllers
+﻿namespace HotelReservations.Web.Controllers
 {
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using HotelReservations.Common;
+    using HotelReservations.Services.Contracts;
+    using HotelReservations.ViewModels.Users;
+    using System.Security.Claims;
+
     public class UsersController : Controller
     {
         private readonly IUsersService service;
@@ -22,9 +19,7 @@ namespace HotelReservations.Web.Controllers
         [Authorize(Roles = GlobalConstants.AdminRole)]
         public async Task<IActionResult> Index(IndexUsersViewModel? model)
         {
-
             model = await service.GetUsersAsync(model);
-
             return View(model);
         }
 
