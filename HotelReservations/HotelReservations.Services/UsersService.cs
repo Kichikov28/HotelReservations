@@ -154,11 +154,14 @@ namespace HotelReservations.Services
 
             if (user != null)
             {
+                var userRole = (await userManager.GetRolesAsync(user)).FirstOrDefault();
                 result = new EditUserViewModel()
                 {
                     Id = user.Id,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
+                    Status = user.Status,
+                    Role = userRole == "User",
                 };
             }
 
@@ -176,6 +179,17 @@ namespace HotelReservations.Services
                 oldUser.FirstName = user.FirstName;
                 oldUser.LastName = user.LastName;
                 oldUser.Status = user.Status;
+
+                if (!user.Role)
+                {
+                    await userManager.RemoveFromRoleAsync(oldUser, "User");
+                }
+
+                if (!(await userManager.IsInRoleAsync(oldUser, "User")))
+                {
+                    await userManager.AddToRoleAsync(oldUser, "User");
+                }
+
                 await userManager.UpdateAsync(oldUser);
             }
 

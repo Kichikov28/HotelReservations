@@ -27,5 +27,7 @@ namespace HotelReservations.ViewModels.Users
 
         [Display(Name = "Status")]
         public bool Status { get; set; }
+        [Display(Name = "User role")]
+        public bool Role { get; set; }
     }
 }

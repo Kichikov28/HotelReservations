@@ -5,14 +5,14 @@
     ViewData["Title"] = "Create Reservation";
 }
 <div class="row d-flex justify-content-center align-items-center h-100">
-    <div class="card rounded-3" style="background-color:#F0F2F5">
+    <div class="card rounded-3" style="background-color:ghostwhite">
         <h1 class="text-center">Create Reservation</h1>
         <div class="card-body p-4 p-md-5">
             <form asp-controller="Reservations" asp-action="Create" method="get">
                 <label asp-for="RoomId" class="control-label">Select Room:</label>
                 <select asp-for="RoomId" asp-items="@Model.Rooms"></select>
-                <span asp-validation-for="RoomId" class="text-danger" style="display:block"></span>
-                <input type="submit" id="loginSubmit" />
+                <span asp-validation-for="RoomId" class="text-danger" style="display:block;"></span>
+                <input type="submit" class="btn btn-primary" id="loginSubmit" />
             </form>
             @if (Model.RoomId != null)
             {
@@ -42,15 +42,15 @@
                     @if (Model.RoomCapacity > 0)
                     {
                         <div class="form-group">
-                            <h4>
+                            <h4 style="text-align:center; font-size:25px">
                                 Client info:
                             </h4>
                             <div class="justify-content-center" style="margin:10px 0px 10px 0px">
                                 <span asp-validation-for="Clients" class="text-danger text-center">
                                 </span>
                             </div>
-                            <table class="table table-responsive table-hover "
-                                   style="border-radius: 10px; overflow: hidden;">
+                            <table class="table table-responsive table-hover"
+                                   style="border-radius: 15px; border-style:solid overflow: hidden; text-align:center">
                                 <thead class="thead-dark">
                                     <tr>
                                         <th>First Name</th>
@@ -85,7 +85,7 @@
                     }
 
 
-                    <a asp-controller="Clients" asp-action="Create" class="btn btn-outline-primary " style="margin: 10px 0px 10px 0px;">New Customer <i class="fa-regular fa-square-plus"></i></a>
+                    <a asp-controller="Clients" asp-action="Create" class="btn btn-outline-success " style="margin: 10px 0px 10px 0px;">New Client</a>
                     @if (User.IsInRole(GlobalConstants.AdminRole))
                     {
                         <div>
@@ -97,11 +97,11 @@
                     </div>
                 </form>
             }
+            <div>
+                <a asp-action="Index" class="btn btn-info">Back to List</a>
+            </div>
         </div>
     </div>
 
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>

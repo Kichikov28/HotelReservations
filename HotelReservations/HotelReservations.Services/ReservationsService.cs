@@ -68,8 +68,8 @@ namespace HotelReservations.Services
                 Client client = await FindClientAsync(clnt);
                 if (client.Reservation == null && room.Capacity > reservation.Clients.Count)
                 {
-                    await AddClientToReservationAsync(client, reservation);
                     reservation.Price += CalculatePrice(model.LeaveDate, model.AccommodationDate, room, client);
+                    await AddClientToReservationAsync(client, reservation);
                 }
             }
 
@@ -202,18 +202,18 @@ namespace HotelReservations.Services
                 Number = x.Number,
             }).ToList();
 
-            foreach (var cust in ClientsToAdd)
+            foreach (var clnt in ClientsToAdd)
             {
-                Client Client = await FindClientAsync(cust);
+                Client Client = await FindClientAsync(clnt);
                 if (Client != null && Client.ReservationId != reservation.Id)
                 {
                     await AddClientToReservationAsync(Client, reservation);
                 }
             }
 
-            foreach (var cust in model.ClientsToRemove)
+            foreach (var clnt in model.ClientsToRemove)
             {
-                Client Client = await context.Clients.FindAsync(cust.Id);
+                Client Client = await context.Clients.FindAsync(clnt.Id);
                 if (Client != null && Client.ReservationId == reservation.Id)
                 {
                     await RemoveClientReservationAsync(Client, reservation);
