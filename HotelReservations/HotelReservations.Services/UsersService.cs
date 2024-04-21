@@ -174,23 +174,21 @@ namespace HotelReservations.Services
         {
             User? oldUser = await GetUserByIdAsync(user.Id);
 
-            if (oldUser != null)
+            if (user.Role)
             {
-                oldUser.FirstName = user.FirstName;
-                oldUser.LastName = user.LastName;
-                oldUser.Status = user.Status;
-
-                if (!user.Role)
-                {
-                    await userManager.RemoveFromRoleAsync(oldUser, "User");
-                }
-
+                // If checked, add the user to the "User" role
                 if (!(await userManager.IsInRoleAsync(oldUser, "User")))
                 {
                     await userManager.AddToRoleAsync(oldUser, "User");
                 }
-
-                await userManager.UpdateAsync(oldUser);
+            }
+            else
+            {
+                // If unchecked, remove the user from the "User" role
+                if (await userManager.IsInRoleAsync(oldUser, "User"))
+                {
+                    await userManager.RemoveFromRoleAsync(oldUser, "User");
+                }
             }
 
             return user.Id;

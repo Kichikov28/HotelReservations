@@ -28,9 +28,9 @@
                 </div>
             </div>
             <div class="form-group">
-                <label asp-for="Role" class="control-label">User role</label>
+                <label asp-for="@Model.Role" class="control-label">User role</label>
                 <div>
-                    <input type="checkbox" id="chkUserRole" name="UserRole" @(Model.Role ? "checked" : "")>
+                    <input type="checkbox" asp-for="@Model.Role" id="chkUserRole">
                     <label for="chkUserRole">User</label>
                 </div>
             </div>
